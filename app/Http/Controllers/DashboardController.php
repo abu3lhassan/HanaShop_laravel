@@ -263,6 +263,31 @@ class DashboardController extends Controller
         return view('dashboard.invoices', compact('invoices'));
     }
 
+    public function showInvoice($id)
+    {
+        $invoice = DB::table('invioces')
+            ->leftJoin('costumers', 'invioces.costumer_id', '=', 'costumers.id')
+            ->leftJoin('products', 'invioces.products_id', '=', 'products.id')
+            ->leftJoin('categories', 'products.category', '=', 'categories.slug')
+            ->select(
+                'invioces.*',
+                'costumers.name as customer_name',
+                'costumers.email as customer_email',
+                'costumers.phone as customer_phone',
+                'costumers.address as customer_address',
+                'products.name as product_name',
+                'products.Description as product_description',
+                'products.category as product_category',
+                'categories.name as category_name'
+            )
+            ->where('invioces.id', $id)
+            ->first();
+
+        abort_unless($invoice, 404);
+
+        return view('dashboard.invoice_show', compact('invoice'));
+    }
+
     private function uniqueCategorySlug(string $name, ?int $ignoreId = null): string
     {
         $baseSlug = Str::slug($name);

@@ -70,6 +70,7 @@
                     <th>Price</th>
                     <th>Total</th>
                     <th>Date</th>
+                    <th>Action</th>
                 </tr>
             </thead>
 
@@ -77,7 +78,7 @@
                 @forelse($invoices as $invoice)
                     @php
                         $category = $invoice->product_category ?? 'electronics';
-                        $categoryLabel = $categoryLabels[$category] ?? ucfirst($category);
+                        $categoryLabel = $categoryLabels[$category] ?? ucfirst(str_replace('-', ' ', $category));
                     @endphp
 
                     <tr>
@@ -114,10 +115,19 @@
                         <td>
                             {{ \Carbon\Carbon::parse($invoice->created_at)->format('Y-m-d') }}
                         </td>
+
+                        <td>
+                            <a
+                                class="btn btn-sm btn-outline-primary rounded-pill"
+                                href="{{ route('invoices.show', $invoice->id) }}"
+                            >
+                                <i class="bi bi-eye me-1"></i> View
+                            </a>
+                        </td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="8">
+                        <td colspan="9">
                             <div class="py-5">
                                 <h5 class="mb-1">No invoices yet</h5>
                                 <p class="text-muted mb-0">Invoice records will appear here once checkout is completed.</p>

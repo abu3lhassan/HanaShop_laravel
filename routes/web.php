@@ -40,7 +40,9 @@ Route::middleware('auth')->group(function () {
     Route::post('/product-details', [DashboardController::class, 'storeProductDetails'])->name('product-details.store');
 
     Route::get('/customers', [DashboardController::class, 'customers'])->name('customers.index');
+
     Route::get('/invoices', [DashboardController::class, 'invoices'])->name('invoices.index');
+    Route::get('/invoices/{id}', [DashboardController::class, 'showInvoice'])->name('invoices.show');
 });
 
 Auth::routes();

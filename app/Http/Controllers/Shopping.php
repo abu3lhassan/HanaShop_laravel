@@ -7,73 +7,53 @@ use Illuminate\Support\Facades\DB;
 
 class Shopping extends Controller
 {
-    private array $decorPrices = [
-        1 => 49,
-        2 => 35,
-        3 => 29,
-    ];
-
-    private array $kitchenPrices = [
-        1 => 79,
-        2 => 25,
-        3 => 39,
-    ];
-
     public function index()
     {
-        $electronics = $this->electronicsQuery()->limit(3)->get();
-        $decor = $this->withCategoryPrices(DB::table('zena')->limit(3)->get(), $this->decorPrices);
-        $kitchenTools = $this->withCategoryPrices(DB::table('kitchen_tools')->limit(3)->get(), $this->kitchenPrices);
+        $electronics = $this->productsByCategory('electronics')->limit(3)->get();
+        $decor = $this->productsByCategory('decor')->limit(3)->get();
+        $kitchenTools = $this->productsByCategory('kitchen')->limit(3)->get();
 
         return view('shopping.landingpage', compact('electronics', 'decor', 'kitchenTools'));
     }
 
     public function electric()
     {
-        $products = $this->electronicsQuery()->get();
+        $products = $this->productsByCategory('electronics')->get();
         return view('shopping.electric', compact('products'));
     }
 
     public function zena()
     {
-        $products = $this->withCategoryPrices(DB::table('zena')->get(), $this->decorPrices);
+        $products = $this->productsByCategory('decor')->get();
         return view('shopping.zena', compact('products'));
     }
 
     public function kitchenTools()
     {
-        $products = $this->withCategoryPrices(DB::table('kitchen_tools')->get(), $this->kitchenPrices);
+        $products = $this->productsByCategory('kitchen')->get();
         return view('shopping.kitchenTools', compact('products'));
     }
 
     public function productdetails($category, $id)
     {
-        $allowed = [
-            'electronics' => 'products',
-            'decor' => 'zena',
-            'kitchen' => 'kitchen_tools',
+        $allowedCategories = [
+            'electronics',
+            'decor',
+            'kitchen',
         ];
 
-        abort_unless(isset($allowed[$category]), 404);
+        abort_unless(in_array($category, $allowedCategories, true), 404);
 
-        if ($category === 'electronics') {
-            $product = $this->electronicsQuery()->where('products.id', $id)->first();
-        } else {
-            $product = DB::table($allowed[$category])->where('id', $id)->first();
-            if ($product) {
-                $prices = $category === 'decor' ? $this->decorPrices : $this->kitchenPrices;
-                $product->price = $prices[$product->id] ?? ($category === 'decor' ? 49 : 79);
-                $product->qty = 12;
-                $product->color = 'Premium';
-                $product->image = $product->image ?: ($category === 'decor'
-                    ? 'https://images.unsplash.com/photo-1513519245088-0e12902e5a38?auto=format&fit=crop&w=900&q=80'
-                    : 'https://images.unsplash.com/photo-1556911220-bff31c812dba?auto=format&fit=crop&w=900&q=80');
-            }
-        }
+        $product = $this->productsByCategory($category)
+            ->where('products.id', $id)
+            ->first();
 
         abort_unless($product, 404);
 
-        return view('shopping.product_details', ['prod' => $product, 'category' => $category]);
+        return view('shopping.product_details', [
+            'prod' => $product,
+            'category' => $category,
+        ]);
     }
 
     public function addToCart(Request $request)
@@ -81,26 +61,28 @@ class Shopping extends Controller
         return redirect()->back()->with('success', 'Product added to cart.');
     }
 
-    private function electronicsQuery()
+    private function productsByCategory(string $category)
     {
+        $latestDetails = DB::table('products__details')
+            ->select('id_products', DB::raw('MAX(id) as latest_detail_id'))
+            ->groupBy('id_products');
+
         return DB::table('products')
-            ->leftJoin('products__details', 'products.id', '=', 'products__details.id_products')
+            ->leftJoinSub($latestDetails, 'latest_details', function ($join) {
+                $join->on('products.id', '=', 'latest_details.id_products');
+            })
+            ->leftJoin('products__details', 'products__details.id', '=', 'latest_details.latest_detail_id')
+            ->where('products.category', $category)
             ->select(
                 'products.id',
                 'products.name',
                 'products.Description',
+                'products.category',
                 DB::raw('COALESCE(products__details.price, 0) as price'),
                 DB::raw('COALESCE(products__details.qty, 0) as qty'),
                 DB::raw("COALESCE(products__details.color, 'Premium') as color"),
                 DB::raw("COALESCE(products__details.image, 'https://images.unsplash.com/photo-1498049794561-7780e7231661?auto=format&fit=crop&w=900&q=80') as image")
-            );
-    }
-
-    private function withCategoryPrices($products, array $prices)
-    {
-        return $products->map(function ($product) use ($prices) {
-            $product->price = $prices[$product->id] ?? 0;
-            return $product;
-        });
+            )
+            ->orderByDesc('products.id');
     }
 }

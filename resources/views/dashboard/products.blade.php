@@ -1,11 +1,19 @@
 @extends('layouts.appdash')
 
 @section('content')
+@php
+    $categoryLabels = [
+        'electronics' => 'Electronics',
+        'decor' => 'Decor',
+        'kitchen' => 'Kitchen Tools',
+    ];
+@endphp
+
 <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap mb-4">
     <div>
         <span class="eyebrow">Products</span>
         <h1 class="premium-title mb-1">Manage Products</h1>
-        <p class="text-muted mb-0">Create and manage HanaShop catalog products.</p>
+        <p class="text-muted mb-0">Create and manage HanaShop catalog products by category.</p>
     </div>
 
     <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addproducts">
@@ -41,9 +49,9 @@
 
     <div class="col-md-4">
         <div class="metric premium-card">
-            <span class="metric-label">Catalog Status</span>
-            <strong>Active</strong>
-            <small>Ready for customers</small>
+            <span class="metric-label">Categories</span>
+            <strong>3</strong>
+            <small>Electronics, Decor, Kitchen Tools</small>
         </div>
     </div>
 
@@ -81,6 +89,14 @@
                         required
                     >
 
+                    <label class="form-label fw-bold">Category</label>
+                    <select class="form-select mb-3" name="category" required>
+                        <option value="" disabled selected>Select category</option>
+                        <option value="electronics" @selected(old('category') === 'electronics')>Electronics</option>
+                        <option value="decor" @selected(old('category') === 'decor')>Decor</option>
+                        <option value="kitchen" @selected(old('category') === 'kitchen')>Kitchen Tools</option>
+                    </select>
+
                     <label class="form-label fw-bold">Description</label>
                     <textarea
                         class="form-control"
@@ -115,6 +131,7 @@
                 <tr>
                     <th>#</th>
                     <th class="text-start">Product</th>
+                    <th>Category</th>
                     <th class="text-start">Description</th>
                     <th>Action</th>
                 </tr>
@@ -122,9 +139,17 @@
 
             <tbody>
                 @forelse($prod as $item)
+                    @php
+                        $category = $item->category ?? 'electronics';
+                        $categoryLabel = $categoryLabels[$category] ?? ucfirst($category);
+                    @endphp
+
                     <tr>
                         <td>{{ $item->id }}</td>
                         <td class="fw-bold text-start">{{ $item->name }}</td>
+                        <td>
+                            <span class="status">{{ $categoryLabel }}</span>
+                        </td>
                         <td class="text-start text-muted">{{ $item->Description }}</td>
                         <td>
                             <div class="d-flex gap-2 justify-content-center">
@@ -152,7 +177,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="4">
+                        <td colspan="5">
                             <div class="py-5">
                                 <h5 class="mb-1">No products yet</h5>
                                 <p class="text-muted mb-3">Start by adding your first HanaShop product.</p>

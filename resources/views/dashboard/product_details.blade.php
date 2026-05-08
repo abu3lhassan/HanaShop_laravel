@@ -58,12 +58,12 @@
     <div class="d-flex justify-content-between align-items-center gap-3 flex-wrap mb-3">
         <div>
             <h3 class="mb-1">Add Product Details</h3>
-            <p class="text-muted mb-0">Select a product, then add price, quantity, color, and image URL.</p>
+            <p class="text-muted mb-0">Select a product, then add price, quantity, color, and upload a product image.</p>
         </div>
         <span class="status">Catalog Setup</span>
     </div>
 
-    <form action="{{ route('product-details.store') }}" method="post">
+    <form action="{{ route('product-details.store') }}" method="post" enctype="multipart/form-data">
         @csrf
 
         <div class="row g-3">
@@ -122,14 +122,16 @@
             </div>
 
             <div class="col-lg-3">
-                <label class="form-label fw-bold">Image URL</label>
+                <label class="form-label fw-bold">Product Image</label>
                 <input
-                    type="url"
+                    type="file"
                     class="form-control"
                     name="img"
-                    value="{{ old('img') }}"
-                    placeholder="https://example.com/image.jpg"
+                    accept="image/png,image/jpeg,image/jpg,image/webp"
                 >
+                <small class="text-muted d-block mt-2">
+                    Upload PNG, JPG, JPEG, or WEBP. Max size: 2MB.
+                </small>
             </div>
         </div>
 
@@ -144,7 +146,7 @@
     <div class="d-flex justify-content-between align-items-center gap-3 flex-wrap mb-3">
         <div>
             <h3 class="mb-1">Product Details List</h3>
-            <p class="text-muted mb-0">Review pricing, stock quantity, color, and image references.</p>
+            <p class="text-muted mb-0">Review pricing, stock quantity, color, and uploaded image references.</p>
         </div>
         <a class="pill" href="{{ route('index') }}">View Store</a>
     </div>
@@ -164,6 +166,16 @@
 
             <tbody>
                 @forelse($producdetails as $item)
+                    @php
+                        $imageUrl = null;
+
+                        if (!empty($item->image)) {
+                            $imageUrl = str_starts_with($item->image, 'http')
+                                ? $item->image
+                                : asset('storage/' . $item->image);
+                        }
+                    @endphp
+
                     <tr>
                         <td>{{ $item->id }}</td>
                         <td class="fw-bold text-start">{{ $item->name }}</td>
@@ -173,8 +185,8 @@
                             <span class="status">{{ $item->color }}</span>
                         </td>
                         <td class="text-start">
-                            @if(!empty($item->image))
-                                <a href="{{ $item->image }}" target="_blank" class="pill">Open Image</a>
+                            @if(!empty($imageUrl))
+                                <a href="{{ $imageUrl }}" target="_blank" class="pill">Open Image</a>
                             @else
                                 <span class="text-muted">No image</span>
                             @endif

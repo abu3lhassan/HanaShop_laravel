@@ -17,6 +17,14 @@
     $categoryKey = $category ?? 'electronics';
     $categoryRoute = $categoryRoutes[$categoryKey] ?? 'index';
     $categoryLabel = $categoryLabels[$categoryKey] ?? 'Product';
+
+    $imageUrl = null;
+
+    if (!empty($prod->image)) {
+        $imageUrl = str_starts_with($prod->image, 'http')
+            ? $prod->image
+            : asset('storage/' . $prod->image);
+    }
 @endphp
 
 <section class="section">
@@ -26,9 +34,9 @@
                 <div class="col-lg-6">
                     <div
                         class="product-media slate"
-                        style="height:420px;@if(!empty($prod->image)) background-image:linear-gradient(135deg,rgba(15,23,42,.55),rgba(15,23,42,.15)),url('{{ $prod->image }}');background-size:cover;background-position:center; @endif"
+                        style="height:420px;@if(!empty($imageUrl)) background-image:linear-gradient(135deg,rgba(15,23,42,.55),rgba(15,23,42,.15)),url('{{ $imageUrl }}');background-size:cover;background-position:center; @endif"
                     >
-                        @if(empty($prod->image))
+                        @if(empty($imageUrl))
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                                 <rect x="4" y="5" width="16" height="12" rx="2"/>
                                 <path d="M7 15l3-3 2 2 3-4 2 5"/>

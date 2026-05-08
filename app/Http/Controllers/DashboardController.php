@@ -10,6 +10,12 @@ use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
+    private array $allowedCategories = [
+        'electronics',
+        'decor',
+        'kitchen',
+    ];
+
     public function index()
     {
         $productsCount = Products::count();
@@ -30,11 +36,13 @@ class DashboardController extends Controller
     {
         $validated = $request->validate([
             'productname' => ['required', 'string', 'max:80'],
+            'category' => ['required', 'string', 'in:' . implode(',', $this->allowedCategories)],
             'description' => ['required', 'string', 'max:180'],
         ]);
 
         Products::create([
             'name' => $validated['productname'],
+            'category' => $validated['category'],
             'Description' => $validated['description'],
         ]);
 
@@ -51,11 +59,13 @@ class DashboardController extends Controller
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:80'],
+            'category' => ['required', 'string', 'in:' . implode(',', $this->allowedCategories)],
             'description' => ['required', 'string', 'max:180'],
         ]);
 
         Products::where('id', $id)->update([
             'name' => $validated['name'],
+            'category' => $validated['category'],
             'Description' => $validated['description'],
         ]);
 
@@ -66,15 +76,17 @@ class DashboardController extends Controller
     {
         Products_Details::where('id_products', $id)->delete();
         Products::findOrFail($id)->delete();
+
         return redirect()->route('products')->with('success', 'Product deleted successfully.');
     }
 
     public function productDetails()
     {
         $prod = Products::orderBy('name')->get();
+
         $producdetails = DB::table('products')
             ->join('products__details', 'products.id', '=', 'products__details.id_products')
-            ->select('products__details.*', 'products.name')
+            ->select('products__details.*', 'products.name', 'products.category')
             ->orderByDesc('products__details.id')
             ->get();
 
@@ -88,15 +100,21 @@ class DashboardController extends Controller
             'price' => ['required', 'numeric', 'min:0'],
             'qty' => ['required', 'integer', 'min:0'],
             'color' => ['required', 'string', 'max:40'],
-            'img' => ['nullable', 'string', 'max:500'],
+            'img' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
         ]);
+
+        $imagePath = 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=900&q=80';
+
+        if ($request->hasFile('img')) {
+            $imagePath = $request->file('img')->store('products', 'public');
+        }
 
         Products_Details::create([
             'id_products' => $validated['product_no'],
             'price' => $validated['price'],
             'qty' => $validated['qty'],
             'color' => $validated['color'],
-            'image' => $validated['img'] ?: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=900&q=80',
+            'image' => $imagePath,
         ]);
 
         return redirect()->route('product-details.index')->with('success', 'Product details saved successfully.');

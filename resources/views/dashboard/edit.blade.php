@@ -1,11 +1,21 @@
 @extends('layouts.appdash')
 
 @section('content')
+@php
+    $currentCategory = old('category', $products->category ?? 'electronics');
+
+    $categoryLabels = [
+        'electronics' => 'Electronics',
+        'decor' => 'Decor',
+        'kitchen' => 'Kitchen Tools',
+    ];
+@endphp
+
 <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap mb-4">
     <div>
         <span class="eyebrow">Edit Product</span>
         <h1 class="premium-title mb-1">{{ $products->name }}</h1>
-        <p class="text-muted mb-0">Update the product name and description shown in HanaShop.</p>
+        <p class="text-muted mb-0">Update the product name, category, and description shown in HanaShop.</p>
     </div>
 
     <a class="btn btn-outline-dark" href="{{ route('products') }}">Back to Products</a>
@@ -27,7 +37,7 @@
         <div class="premium-card p-4">
             <div class="mb-4">
                 <h3 class="mb-1">Product Information</h3>
-                <p class="text-muted mb-0">Keep the catalog name and description clear for customers.</p>
+                <p class="text-muted mb-0">Keep the catalog name, category, and description clear for customers.</p>
             </div>
 
             <form action="{{ route('products.update', $products->id) }}" method="post">
@@ -44,6 +54,15 @@
                         placeholder="Example: Smart Wireless Headphones"
                         required
                     >
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Category</label>
+                    <select class="form-select" name="category" required>
+                        <option value="electronics" @selected($currentCategory === 'electronics')>Electronics</option>
+                        <option value="decor" @selected($currentCategory === 'decor')>Decor</option>
+                        <option value="kitchen" @selected($currentCategory === 'kitchen')>Kitchen Tools</option>
+                    </select>
                 </div>
 
                 <div class="mb-4">
@@ -68,7 +87,10 @@
     <div class="col-lg-4">
         <div class="glass-card feature h-100">
             <span class="eyebrow">Product Record</span>
-            <h3 class="mb-3">#{{ $products->id }}</h3>
+            <h3 class="mb-2">#{{ $products->id }}</h3>
+            <span class="status mb-3 d-inline-block">
+                {{ $categoryLabels[$currentCategory] ?? ucfirst($currentCategory) }}
+            </span>
 
             <div class="side-item">
                 <span class="side-dot"></span>
@@ -77,7 +99,7 @@
 
             <div class="side-item">
                 <span class="side-dot"></span>
-                Product details are managed separately
+                Category controls storefront placement
             </div>
 
             <div class="side-item">

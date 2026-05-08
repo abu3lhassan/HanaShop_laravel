@@ -12,7 +12,7 @@
                 <span class="eyebrow">Shopping Cart</span>
                 <h1 class="premium-title mb-1">Your Cart</h1>
                 <p class="text-muted mb-0">
-                    Review selected products, update quantities, or remove items before checkout.
+                    Review selected products, update quantities, and complete checkout.
                 </p>
             </div>
 
@@ -57,7 +57,7 @@
                 <div class="metric premium-card">
                     <span class="metric-label">Status</span>
                     <strong>{{ $cartCount > 0 ? 'Ready' : 'Empty' }}</strong>
-                    <small>{{ $cartCount > 0 ? 'Review your cart' : 'Add products first' }}</small>
+                    <small>{{ $cartCount > 0 ? 'Ready for checkout' : 'Add products first' }}</small>
                 </div>
             </div>
         </div>
@@ -176,39 +176,90 @@
                 </div>
 
                 <div class="col-lg-4">
-                    <div class="glass-card feature h-100">
-                        <span class="eyebrow">Cart Summary</span>
-                        <h3 class="mb-3">Order Review</h3>
+                    <div class="glass-card feature">
+                        <span class="eyebrow">Checkout</span>
+                        <h3 class="mb-3">Customer Information</h3>
 
-                        <div class="side-item">
-                            <span class="side-dot"></span>
-                            Items: {{ $cartCount }}
-                        </div>
+                        <form action="{{ route('cart.checkout') }}" method="POST">
+                            @csrf
 
-                        <div class="side-item">
-                            <span class="side-dot"></span>
-                            Subtotal: SAR {{ number_format((float) $subtotal, 2) }}
-                        </div>
-
-                        <div class="side-item">
-                            <span class="side-dot"></span>
-                            Currency: SAR
-                        </div>
-
-                        <div class="mt-4 pt-3 border-top">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <strong>Total</strong>
-                                <strong>SAR {{ number_format((float) $subtotal, 2) }}</strong>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Customer Name</label>
+                                <input
+                                    type="text"
+                                    name="name"
+                                    class="form-control"
+                                    value="{{ old('name') }}"
+                                    maxlength="30"
+                                    placeholder="Full name"
+                                    required
+                                >
                             </div>
 
-                            <button class="btn btn-primary w-100" type="button" disabled>
-                                Checkout Coming Next
-                            </button>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Email</label>
+                                <input
+                                    type="email"
+                                    name="email"
+                                    class="form-control"
+                                    value="{{ old('email') }}"
+                                    maxlength="30"
+                                    placeholder="customer@email.com"
+                                    required
+                                >
+                            </div>
 
-                            <p class="text-muted mt-3 mb-0">
-                                Checkout will be connected to invoices in the next development step.
-                            </p>
-                        </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Phone</label>
+                                <input
+                                    type="text"
+                                    name="phone"
+                                    class="form-control"
+                                    value="{{ old('phone') }}"
+                                    maxlength="30"
+                                    placeholder="05xxxxxxxx"
+                                    required
+                                >
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Address</label>
+                                <input
+                                    type="text"
+                                    name="address"
+                                    class="form-control"
+                                    value="{{ old('address') }}"
+                                    maxlength="30"
+                                    placeholder="City / district"
+                                    required
+                                >
+                            </div>
+
+                            <div class="mt-4 pt-3 border-top">
+                                <div class="side-item">
+                                    <span class="side-dot"></span>
+                                    Items: {{ $cartCount }}
+                                </div>
+
+                                <div class="side-item">
+                                    <span class="side-dot"></span>
+                                    Currency: SAR
+                                </div>
+
+                                <div class="d-flex justify-content-between align-items-center my-3">
+                                    <strong>Total</strong>
+                                    <strong>SAR {{ number_format((float) $subtotal, 2) }}</strong>
+                                </div>
+
+                                <button class="btn btn-primary w-100" type="submit">
+                                    Complete Checkout
+                                </button>
+
+                                <p class="text-muted mt-3 mb-0">
+                                    Completing checkout will create customer and invoice records in the dashboard.
+                                </p>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>

@@ -19,6 +19,7 @@ Route::post('/add-to-cart', [Shopping::class, 'addToCart'])->name('add_to_cart')
 Route::post('/cart/update', [Shopping::class, 'updateCart'])->name('cart.update');
 Route::post('/cart/remove', [Shopping::class, 'removeFromCart'])->name('cart.remove');
 Route::post('/cart/clear', [Shopping::class, 'clearCart'])->name('cart.clear');
+Route::post('/cart/checkout', [Shopping::class, 'checkout'])->name('cart.checkout');
 
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');

@@ -149,6 +149,52 @@ class Shopping extends Controller
         return redirect()->route('cart')->with('success', 'Cart cleared successfully.');
     }
 
+    public function checkout(Request $request)
+    {
+        $cart = session()->get('cart', []);
+
+        if (count($cart) === 0) {
+            return redirect()->route('cart')->with('success', 'Your cart is empty.');
+        }
+
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:30'],
+            'email' => ['required', 'email', 'max:30'],
+            'phone' => ['required', 'string', 'max:30'],
+            'address' => ['required', 'string', 'max:30'],
+        ]);
+
+        DB::transaction(function () use ($cart, $validated) {
+            $customerId = DB::table('costumers')->insertGetId([
+                'name' => $validated['name'],
+                'email' => $validated['email'],
+                'phone' => $validated['phone'],
+                'address' => $validated['address'],
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+            foreach ($cart as $item) {
+                $price = (float) $item['price'];
+                $quantity = (int) $item['quantity'];
+
+                DB::table('invioces')->insert([
+                    'costumer_id' => $customerId,
+                    'products_id' => (int) $item['id'],
+                    'qty' => $quantity,
+                    'price' => $price,
+                    'total' => $price * $quantity,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
+        });
+
+        session()->forget('cart');
+
+        return redirect()->route('index')->with('success', 'Order completed successfully. Invoice records were created.');
+    }
+
     private function productsByCategory(string $category)
     {
         $latestDetails = DB::table('products__details')

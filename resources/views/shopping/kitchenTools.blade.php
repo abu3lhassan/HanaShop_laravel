@@ -9,7 +9,7 @@
         </div>
         <div class="grid-3">
             @forelse($products as $product)
-                @include('shopping.partials.product-card', ['product' => $product, 'category' => 'kitchen', 'fallbackClass' => 'mint', 'price' => 79])
+                @include('shopping.partials.product-card', ['product' => $product, 'category' => 'kitchen', 'fallbackClass' => 'mint'])
             @empty
                 <div class="glass-card feature"><h3>No products yet</h3><p>Add products from the dashboard.</p></div>
             @endforelse

@@ -59,4 +59,19 @@
         </div>
     </div>
 </section>
+
+<section class="section">
+    <div class="container">
+        <div class="section-head">
+            <h2>Admin management features</h2>
+            <p>HanaShop includes clear management areas for products, customers, and invoices.</p>
+        </div>
+        <div class="grid-3 equal-grid admin-feature-grid">
+            <article class="glass-card feature admin-feature"><div class="icon">＋</div><h3>Product Management</h3><p>Add, edit, and organize products from one dashboard area.</p></article>
+            <article class="glass-card feature admin-feature"><div class="icon">◎</div><h3>Customer Management</h3><p>Keep customer information organized and easy to review.</p></article>
+            <article class="glass-card feature admin-feature"><div class="icon">▣</div><h3>Invoice Tracking</h3><p>Review quantities, prices, and totals in a clean invoice layout.</p></article>
+        </div>
+    </div>
+</section>
+
 @endsection

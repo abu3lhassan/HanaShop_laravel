@@ -18,7 +18,7 @@
                     <h1 class="premium-title display-4">{{ $prod->name }}</h1>
                     <p class="lead text-secondary">{{ $prod->Description }}</p>
                     <div class="row g-3 my-4">
-                        <div class="col-6"><div class="metric"><strong>${{ number_format((float) ($prod->price ?? 0), 0) }}</strong><span>Price</span></div></div>
+                        <div class="col-6"><div class="metric"><strong>SAR {{ number_format((float) ($prod->price ?? 0), 0) }}</strong><span>Price</span></div></div>
                         <div class="col-6"><div class="metric"><strong>{{ $prod->qty ?? 0 }}</strong><span>Quantity</span></div></div>
                     </div>
                     <div class="d-flex gap-2 flex-wrap">

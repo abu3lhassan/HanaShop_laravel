@@ -25,6 +25,8 @@
             ? $prod->image
             : asset('storage/' . $prod->image);
     }
+
+    $availableQty = max((int) ($prod->qty ?? 0), 0);
 @endphp
 
 <section class="section">
@@ -62,8 +64,8 @@
 
                         <div class="col-md-4 col-6">
                             <div class="metric">
-                                <strong>{{ $prod->qty ?? 0 }}</strong>
-                                <span>Quantity</span>
+                                <strong>{{ $availableQty }}</strong>
+                                <span>Available Qty</span>
                             </div>
                         </div>
 
@@ -83,15 +85,46 @@
                         </p>
                     </div>
 
+                    <div class="glass-card feature mb-4">
+                        <h3>Add to Cart</h3>
+
+                        @if($availableQty > 0)
+                            <form action="{{ route('add_to_cart') }}" method="POST">
+                                @csrf
+
+                                <input type="hidden" name="product_id" value="{{ $prod->id }}">
+                                <input type="hidden" name="category" value="{{ $categoryKey }}">
+
+                                <div class="row g-3 align-items-end">
+                                    <div class="col-md-4">
+                                        <label class="form-label fw-bold">Quantity</label>
+                                        <input
+                                            type="number"
+                                            name="quantity"
+                                            class="form-control"
+                                            value="1"
+                                            min="1"
+                                            max="{{ $availableQty }}"
+                                            required
+                                        >
+                                    </div>
+
+                                    <div class="col-md-8">
+                                        <button class="btn btn-primary w-100" type="submit">
+                                            Add to Cart
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        @else
+                            <p class="text-muted mb-0">This product is currently out of stock.</p>
+                        @endif
+                    </div>
+
                     <div class="d-flex gap-2 flex-wrap">
-                        <form action="{{ route('add_to_cart') }}" method="POST">
-                            @csrf
-                            <input type="hidden" name="product_id" value="{{ $prod->id }}">
-                            <input type="hidden" name="category" value="{{ $categoryKey }}">
-                            <button class="btn btn-primary" type="submit">
-                                Add to Cart
-                            </button>
-                        </form>
+                        <a class="btn btn-soft" href="{{ route('cart') }}">
+                            View Cart
+                        </a>
 
                         <a class="btn btn-soft" href="{{ route($categoryRoute) }}">
                             Back to {{ $categoryLabel }}

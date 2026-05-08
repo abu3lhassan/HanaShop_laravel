@@ -1,5 +1,9 @@
 <!doctype html>
 <html lang="en">
+@php
+    $cartCount = collect(session('cart', []))->sum('quantity');
+@endphp
+
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -60,6 +64,17 @@
                     <li class="nav-item">
                         <a class="nav-link fw-bold {{ request()->routeIs('kitchenTools') ? 'active' : '' }}" href="{{ route('kitchenTools') }}">
                             Kitchen Tools
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="btn btn-soft py-2 px-3 position-relative {{ request()->routeIs('cart') ? 'active' : '' }}" href="{{ route('cart') }}">
+                            <i class="bi bi-bag me-1"></i> Cart
+                            @if($cartCount > 0)
+                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                    {{ $cartCount }}
+                                </span>
+                            @endif
                         </a>
                     </li>
 

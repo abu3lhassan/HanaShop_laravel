@@ -56,9 +56,97 @@ class Shopping extends Controller
         ]);
     }
 
+    public function cart()
+    {
+        $cart = session()->get('cart', []);
+
+        $subtotal = collect($cart)->sum(function ($item) {
+            return ((float) $item['price']) * ((int) $item['quantity']);
+        });
+
+        return view('shopping.cart', [
+            'cart' => $cart,
+            'subtotal' => $subtotal,
+        ]);
+    }
+
     public function addToCart(Request $request)
     {
-        return redirect()->back()->with('success', 'Product added to cart.');
+        $validated = $request->validate([
+            'product_id' => ['required', 'integer'],
+            'category' => ['required', 'string', 'in:electronics,decor,kitchen'],
+            'quantity' => ['nullable', 'integer', 'min:1'],
+        ]);
+
+        $product = $this->productsByCategory($validated['category'])
+            ->where('products.id', $validated['product_id'])
+            ->first();
+
+        abort_unless($product, 404);
+
+        $quantity = (int) ($validated['quantity'] ?? 1);
+        $cart = session()->get('cart', []);
+
+        $cartKey = $validated['category'] . '_' . $product->id;
+
+        if (isset($cart[$cartKey])) {
+            $cart[$cartKey]['quantity'] += $quantity;
+        } else {
+            $cart[$cartKey] = [
+                'id' => $product->id,
+                'category' => $validated['category'],
+                'name' => $product->name,
+                'description' => $product->Description,
+                'price' => (float) $product->price,
+                'quantity' => $quantity,
+                'image' => $product->image,
+                'color' => $product->color,
+            ];
+        }
+
+        session()->put('cart', $cart);
+
+        return redirect()->route('cart')->with('success', 'Product added to cart.');
+    }
+
+    public function updateCart(Request $request)
+    {
+        $validated = $request->validate([
+            'cart_key' => ['required', 'string'],
+            'quantity' => ['required', 'integer', 'min:1'],
+        ]);
+
+        $cart = session()->get('cart', []);
+
+        if (isset($cart[$validated['cart_key']])) {
+            $cart[$validated['cart_key']]['quantity'] = (int) $validated['quantity'];
+            session()->put('cart', $cart);
+        }
+
+        return redirect()->route('cart')->with('success', 'Cart updated successfully.');
+    }
+
+    public function removeFromCart(Request $request)
+    {
+        $validated = $request->validate([
+            'cart_key' => ['required', 'string'],
+        ]);
+
+        $cart = session()->get('cart', []);
+
+        if (isset($cart[$validated['cart_key']])) {
+            unset($cart[$validated['cart_key']]);
+            session()->put('cart', $cart);
+        }
+
+        return redirect()->route('cart')->with('success', 'Product removed from cart.');
+    }
+
+    public function clearCart()
+    {
+        session()->forget('cart');
+
+        return redirect()->route('cart')->with('success', 'Cart cleared successfully.');
     }
 
     private function productsByCategory(string $category)

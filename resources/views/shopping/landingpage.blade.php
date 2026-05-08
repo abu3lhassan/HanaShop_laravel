@@ -11,8 +11,7 @@
             <span class="eyebrow">Premium Shopping Experience</span>
             <h1>Elegant shopping for modern homes.</h1>
             <p>
-                HanaShop brings decor, kitchen tools, and electronics into one clean,
-                premium, and easy-to-navigate shopping experience.
+                HanaShop helps you manage and showcase products through a clean shopping experience and a simple admin dashboard.
             </p>
 
             <div class="hero-actions">

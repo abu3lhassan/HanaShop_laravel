@@ -8,7 +8,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <meta name="description" content="HanaShop is a premium shopping experience for decor, kitchen tools, and electronics.">
+    <meta name="description" content="HanaShop — A modern e-commerce platform with a premium shopping and admin experience.">
 
     <title>HanaShop | Premium Shopping Experience</title>
 
@@ -104,7 +104,7 @@
         <div class="container footer-inner">
             <div>
                 <strong>HanaShop</strong>
-                <span>Premium shopping for decor, kitchen tools, and electronics.</span>
+                <span>A modern e-commerce platform with a premium shopping and admin experience.</span>
             </div>
 
             <div class="d-flex gap-3 flex-wrap align-items-center">

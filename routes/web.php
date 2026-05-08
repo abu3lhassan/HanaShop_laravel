@@ -30,6 +30,11 @@ Route::middleware('auth')->group(function () {
     Route::put('/products/{id}', [DashboardController::class, 'updateProduct'])->name('products.update');
     Route::delete('/products/{id}', [DashboardController::class, 'deleteProduct'])->name('products.destroy');
 
+    Route::get('/categories', [DashboardController::class, 'categories'])->name('categories.index');
+    Route::post('/categories', [DashboardController::class, 'storeCategory'])->name('categories.store');
+    Route::put('/categories/{id}', [DashboardController::class, 'updateCategory'])->name('categories.update');
+    Route::post('/categories/{id}/toggle', [DashboardController::class, 'toggleCategory'])->name('categories.toggle');
+
     Route::get('/product-details', [DashboardController::class, 'productDetails'])->name('product-details.index');
     Route::post('/product-details', [DashboardController::class, 'storeProductDetails'])->name('product-details.store');
 

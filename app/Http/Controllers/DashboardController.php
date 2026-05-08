@@ -2,23 +2,20 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Category;
 use App\Models\Costumers;
 use App\Models\Products;
 use App\Models\Products_Details;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class DashboardController extends Controller
 {
-    private array $allowedCategories = [
-        'electronics',
-        'decor',
-        'kitchen',
-    ];
-
     public function index()
     {
         $productsCount = Products::count();
+        $categoriesCount = Category::count();
         $detailsCount = Products_Details::count();
         $customersCount = Costumers::count();
         $invoicesCount = DB::table('invioces')->count();
@@ -29,6 +26,7 @@ class DashboardController extends Controller
 
         return view('dashboard.index', compact(
             'productsCount',
+            'categoriesCount',
             'detailsCount',
             'customersCount',
             'invoicesCount',
@@ -65,14 +63,18 @@ class DashboardController extends Controller
             ->orderByDesc('products.id')
             ->get();
 
-        return view('dashboard.products', compact('prod'));
+        $categories = Category::where('is_active', true)
+            ->orderBy('name')
+            ->get();
+
+        return view('dashboard.products', compact('prod', 'categories'));
     }
 
     public function storeProduct(Request $request)
     {
         $validated = $request->validate([
             'productname' => ['required', 'string', 'max:80'],
-            'category' => ['required', 'string', 'in:' . implode(',', $this->allowedCategories)],
+            'category' => ['required', 'string', 'exists:categories,slug'],
             'description' => ['required', 'string', 'max:180'],
         ]);
 
@@ -95,7 +97,7 @@ class DashboardController extends Controller
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:80'],
-            'category' => ['required', 'string', 'in:' . implode(',', $this->allowedCategories)],
+            'category' => ['required', 'string', 'exists:categories,slug'],
             'description' => ['required', 'string', 'max:180'],
         ]);
 
@@ -114,6 +116,70 @@ class DashboardController extends Controller
         Products::findOrFail($id)->delete();
 
         return redirect()->route('products')->with('success', 'Product deleted successfully.');
+    }
+
+    public function categories()
+    {
+        $categories = Category::orderByDesc('id')->get();
+
+        return view('dashboard.categories', compact('categories'));
+    }
+
+    public function storeCategory(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:80'],
+            'description' => ['nullable', 'string', 'max:180'],
+        ]);
+
+        $slug = $this->uniqueCategorySlug($validated['name']);
+
+        Category::create([
+            'name' => $validated['name'],
+            'slug' => $slug,
+            'description' => $validated['description'] ?? null,
+            'is_active' => true,
+        ]);
+
+        return redirect()->route('categories.index')->with('success', 'Category added successfully.');
+    }
+
+    public function updateCategory(Request $request, $id)
+    {
+        $category = Category::findOrFail($id);
+
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:80'],
+            'description' => ['nullable', 'string', 'max:180'],
+        ]);
+
+        $oldSlug = $category->slug;
+        $newSlug = $this->uniqueCategorySlug($validated['name'], $category->id);
+
+        $category->update([
+            'name' => $validated['name'],
+            'slug' => $newSlug,
+            'description' => $validated['description'] ?? null,
+        ]);
+
+        if ($oldSlug !== $newSlug) {
+            Products::where('category', $oldSlug)->update([
+                'category' => $newSlug,
+            ]);
+        }
+
+        return redirect()->route('categories.index')->with('success', 'Category updated successfully.');
+    }
+
+    public function toggleCategory($id)
+    {
+        $category = Category::findOrFail($id);
+
+        $category->update([
+            'is_active' => ! $category->is_active,
+        ]);
+
+        return redirect()->route('categories.index')->with('success', 'Category status updated successfully.');
     }
 
     public function productDetails()
@@ -195,5 +261,27 @@ class DashboardController extends Controller
             ->get();
 
         return view('dashboard.invoices', compact('invoices'));
+    }
+
+    private function uniqueCategorySlug(string $name, ?int $ignoreId = null): string
+    {
+        $baseSlug = Str::slug($name);
+        $baseSlug = $baseSlug !== '' ? $baseSlug : 'category';
+
+        $slug = $baseSlug;
+        $counter = 2;
+
+        while (
+            Category::where('slug', $slug)
+                ->when($ignoreId, function ($query) use ($ignoreId) {
+                    $query->where('id', '!=', $ignoreId);
+                })
+                ->exists()
+        ) {
+            $slug = $baseSlug . '-' . $counter;
+            $counter++;
+        }
+
+        return $slug;
     }
 }

@@ -6,7 +6,7 @@
         <span class="eyebrow">Admin Dashboard</span>
         <h1 class="premium-title">HanaShop Control Center</h1>
         <p class="text-muted mb-0">
-            Monitor store activity, revenue, products, customers, and invoices from one premium workspace.
+            Monitor store activity, revenue, products, categories, customers, and invoices from one premium workspace.
         </p>
     </div>
 
@@ -17,7 +17,7 @@
 </div>
 
 <div class="row g-4 mb-4">
-    <div class="col-md-3">
+    <div class="col-md-6 col-xl">
         <a href="{{ route('products') }}" class="text-decoration-none">
             <div class="metric premium-card">
                 <span class="metric-label">Products</span>
@@ -27,7 +27,17 @@
         </a>
     </div>
 
-    <div class="col-md-3">
+    <div class="col-md-6 col-xl">
+        <a href="{{ route('categories.index') }}" class="text-decoration-none">
+            <div class="metric premium-card">
+                <span class="metric-label">Categories</span>
+                <strong>{{ $categoriesCount ?? 0 }}</strong>
+                <small>Storefront groups</small>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-md-6 col-xl">
         <a href="{{ route('customers.index') }}" class="text-decoration-none">
             <div class="metric premium-card">
                 <span class="metric-label">Customers</span>
@@ -37,7 +47,7 @@
         </a>
     </div>
 
-    <div class="col-md-3">
+    <div class="col-md-6 col-xl">
         <a href="{{ route('invoices.index') }}" class="text-decoration-none">
             <div class="metric premium-card">
                 <span class="metric-label">Invoices</span>
@@ -47,7 +57,7 @@
         </a>
     </div>
 
-    <div class="col-md-3">
+    <div class="col-md-6 col-xl">
         <a href="{{ route('invoices.index') }}" class="text-decoration-none">
             <div class="metric premium-card">
                 <span class="metric-label">Revenue</span>
@@ -91,7 +101,7 @@
         <span class="eyebrow">Business Overview</span>
         <h3>Store Performance</h3>
         <p class="text-muted">
-            HanaShop tracks checkout activity through real customer and invoice records.
+            HanaShop tracks products, categories, checkout activity, customers, and invoice records.
         </p>
 
         <div class="side-item">
@@ -102,6 +112,11 @@
         <div class="side-item">
             <span class="side-dot"></span>
             Sold quantity: {{ $totalSoldQuantity ?? 0 }}
+        </div>
+
+        <div class="side-item">
+            <span class="side-dot"></span>
+            Categories: {{ $categoriesCount ?? 0 }}
         </div>
 
         <div class="side-item">
@@ -129,6 +144,12 @@
             <span>Products</span>
             <a class="pill" href="{{ route('products') }}">Open</a>
             <span class="status">Unified</span>
+        </div>
+
+        <div class="table-row">
+            <span>Categories</span>
+            <a class="pill" href="{{ route('categories.index') }}">Open</a>
+            <span class="status">Active</span>
         </div>
 
         <div class="table-row">

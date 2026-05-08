@@ -2,11 +2,7 @@
 
 @section('content')
 @php
-    $categoryLabels = [
-        'electronics' => 'Electronics',
-        'decor' => 'Decor',
-        'kitchen' => 'Kitchen Tools',
-    ];
+    $categoryLabels = $categories->pluck('name', 'slug')->toArray();
 @endphp
 
 <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap mb-4">
@@ -58,11 +54,13 @@
     </div>
 
     <div class="col-md-3">
-        <div class="metric premium-card">
-            <span class="metric-label">Categories</span>
-            <strong>3</strong>
-            <small>Electronics, Decor, Kitchen</small>
-        </div>
+        <a href="{{ route('categories.index') }}" class="text-decoration-none">
+            <div class="metric premium-card">
+                <span class="metric-label">Categories</span>
+                <strong>{{ $categories->count() }}</strong>
+                <small>Active storefront groups</small>
+            </div>
+        </a>
     </div>
 
     <div class="col-md-3">
@@ -102,9 +100,12 @@
                     <label class="form-label fw-bold">Category</label>
                     <select class="form-select mb-3" name="category" required>
                         <option value="" disabled selected>Select category</option>
-                        <option value="electronics" @selected(old('category') === 'electronics')>Electronics</option>
-                        <option value="decor" @selected(old('category') === 'decor')>Decor</option>
-                        <option value="kitchen" @selected(old('category') === 'kitchen')>Kitchen Tools</option>
+
+                        @foreach($categories as $category)
+                            <option value="{{ $category->slug }}" @selected(old('category') === $category->slug)>
+                                {{ $category->name }}
+                            </option>
+                        @endforeach
                     </select>
 
                     <label class="form-label fw-bold">Description</label>
@@ -134,7 +135,7 @@
                 Manage product info, category, price, stock, color, and image from this page.
             </p>
         </div>
-        <span class="status">Unified Management</span>
+        <a class="pill" href="{{ route('categories.index') }}">Manage Categories</a>
     </div>
 
     <div class="table-responsive">
@@ -155,8 +156,8 @@
             <tbody>
                 @forelse($prod as $item)
                     @php
-                        $category = $item->category ?? 'electronics';
-                        $categoryLabel = $categoryLabels[$category] ?? ucfirst($category);
+                        $category = $item->category ?? '';
+                        $categoryLabel = $categoryLabels[$category] ?? ($category ? ucfirst(str_replace('-', ' ', $category)) : 'Uncategorized');
 
                         $imageUrl = null;
 
@@ -165,6 +166,8 @@
                                 ? $item->image
                                 : asset('storage/' . $item->image);
                         }
+
+                        $currentCategoryExists = $categories->contains('slug', $category);
                     @endphp
 
                     <tr>
@@ -275,9 +278,20 @@
 
                                         <label class="form-label fw-bold">Category</label>
                                         <select class="form-select mb-3" name="category" required>
-                                            <option value="electronics" @selected(old('category', $item->category) === 'electronics')>Electronics</option>
-                                            <option value="decor" @selected(old('category', $item->category) === 'decor')>Decor</option>
-                                            <option value="kitchen" @selected(old('category', $item->category) === 'kitchen')>Kitchen Tools</option>
+                                            @if($category && ! $currentCategoryExists)
+                                                <option value="{{ $category }}" selected>
+                                                    {{ $categoryLabel }} (inactive)
+                                                </option>
+                                            @endif
+
+                                            @foreach($categories as $categoryOption)
+                                                <option
+                                                    value="{{ $categoryOption->slug }}"
+                                                    @selected(old('category', $item->category) === $categoryOption->slug)
+                                                >
+                                                    {{ $categoryOption->name }}
+                                                </option>
+                                            @endforeach
                                         </select>
 
                                         <label class="form-label fw-bold">Description</label>

@@ -20,7 +20,6 @@
             <nav class="d-grid gap-2">
                 <a class="admin-link" href="{{ route('dashboard') }}"><i class="bi bi-speedometer2"></i> Dashboard</a>
                 <a class="admin-link" href="{{ route('products') }}"><i class="bi bi-box-seam"></i> Products</a>
-                <a class="admin-link" href="{{ route('product-details.index') }}"><i class="bi bi-card-checklist"></i> Product Details</a>
                 <a class="admin-link" href="{{ route('customers.index') }}"><i class="bi bi-people"></i> Customers</a>
                 <a class="admin-link" href="{{ route('invoices.index') }}"><i class="bi bi-receipt"></i> Invoices</a>
                 <a class="admin-link" href="{{ route('index') }}"><i class="bi bi-shop"></i> Store</a>

@@ -60,11 +60,13 @@
 
 <div class="row g-4 mb-4">
     <div class="col-md-4">
-        <div class="metric premium-card">
-            <span class="metric-label">Product Details</span>
-            <strong>{{ $detailsCount ?? 0 }}</strong>
-            <small>Pricing, stock, and images</small>
-        </div>
+        <a href="{{ route('products') }}" class="text-decoration-none">
+            <div class="metric premium-card">
+                <span class="metric-label">Product Setup</span>
+                <strong>{{ $detailsCount ?? 0 }}</strong>
+                <small>Items with pricing, stock, and images</small>
+            </div>
+        </a>
     </div>
 
     <div class="col-md-4">
@@ -89,7 +91,7 @@
         <span class="eyebrow">Business Overview</span>
         <h3>Store Performance</h3>
         <p class="text-muted">
-            HanaShop now tracks checkout activity through real customer and invoice records.
+            HanaShop tracks checkout activity through real customer and invoice records.
         </p>
 
         <div class="side-item">
@@ -126,13 +128,7 @@
         <div class="table-row">
             <span>Products</span>
             <a class="pill" href="{{ route('products') }}">Open</a>
-            <span class="status">Active</span>
-        </div>
-
-        <div class="table-row">
-            <span>Product Details</span>
-            <a class="pill" href="{{ route('product-details.index') }}">Open</a>
-            <span class="status">Active</span>
+            <span class="status">Unified</span>
         </div>
 
         <div class="table-row">

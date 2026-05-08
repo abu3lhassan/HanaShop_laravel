@@ -65,7 +65,9 @@
         <div class="grid-3">
             @forelse($categories as $category)
                 <a class="glass-card feature" href="{{ route('category.show', $category->slug) }}">
-                    <div class="icon">✦</div>
+                    <div class="icon">
+                        <i class="bi {{ $category->icon ?? 'bi-tag' }}"></i>
+                    </div>
                     <h3>{{ $category->name }}</h3>
                     <p>{{ $category->description ?: 'Browse products in this category.' }}</p>
                 </a>

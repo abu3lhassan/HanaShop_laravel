@@ -130,14 +130,17 @@ class DashboardController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:80'],
             'description' => ['nullable', 'string', 'max:180'],
+            'icon' => ['nullable', 'string', 'max:50'],
         ]);
 
         $slug = $this->uniqueCategorySlug($validated['name']);
+        $icon = $this->cleanCategoryIcon($validated['icon'] ?? null);
 
         Category::create([
             'name' => $validated['name'],
             'slug' => $slug,
             'description' => $validated['description'] ?? null,
+            'icon' => $icon,
             'is_active' => true,
         ]);
 
@@ -151,15 +154,18 @@ class DashboardController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:80'],
             'description' => ['nullable', 'string', 'max:180'],
+            'icon' => ['nullable', 'string', 'max:50'],
         ]);
 
         $oldSlug = $category->slug;
         $newSlug = $this->uniqueCategorySlug($validated['name'], $category->id);
+        $icon = $this->cleanCategoryIcon($validated['icon'] ?? null);
 
         $category->update([
             'name' => $validated['name'],
             'slug' => $newSlug,
             'description' => $validated['description'] ?? null,
+            'icon' => $icon,
         ]);
 
         if ($oldSlug !== $newSlug) {
@@ -308,5 +314,20 @@ class DashboardController extends Controller
         }
 
         return $slug;
+    }
+
+    private function cleanCategoryIcon(?string $icon): string
+    {
+        $icon = trim((string) $icon);
+
+        if ($icon === '') {
+            return 'bi-tag';
+        }
+
+        if (! str_starts_with($icon, 'bi-')) {
+            return 'bi-tag';
+        }
+
+        return $icon;
     }
 }

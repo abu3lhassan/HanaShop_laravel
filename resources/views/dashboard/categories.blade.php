@@ -1,12 +1,32 @@
 @extends('layouts.appdash')
 
 @section('content')
+@php
+    $iconOptions = [
+        'bi-tag' => 'General',
+        'bi-phone' => 'Electronics',
+        'bi-stars' => 'Decor / Featured',
+        'bi-cup-hot' => 'Kitchen / Food',
+        'bi-bag' => 'Shopping',
+        'bi-watch' => 'Accessories',
+        'bi-gem' => 'Luxury',
+        'bi-gift' => 'Gifts',
+        'bi-laptop' => 'Technology',
+        'bi-house-heart' => 'Home',
+        'bi-controller' => 'Games',
+        'bi-book' => 'Books',
+        'bi-brush' => 'Beauty',
+        'bi-bicycle' => 'Sports',
+        'bi-flower1' => 'Lifestyle',
+    ];
+@endphp
+
 <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap mb-4">
     <div>
         <span class="eyebrow">Categories</span>
         <h1 class="premium-title mb-1">Category Management</h1>
         <p class="text-muted mb-0">
-            Add, rename, and manage storefront product categories from the admin dashboard.
+            Add, rename, choose icons, and manage storefront product categories from the admin dashboard.
         </p>
     </div>
 
@@ -83,6 +103,25 @@
                         required
                     >
 
+                    <label class="form-label fw-bold">Icon</label>
+                    <div class="input-group mb-2">
+                        <span class="input-group-text">
+                            <i class="bi {{ old('icon', 'bi-tag') }}"></i>
+                        </span>
+
+                        <select class="form-select" name="icon" required>
+                            @foreach($iconOptions as $iconClass => $iconLabel)
+                                <option value="{{ $iconClass }}" @selected(old('icon', 'bi-tag') === $iconClass)>
+                                    {{ $iconLabel }} — {{ $iconClass }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <small class="text-muted d-block mb-3">
+                        Choose an icon for storefront category cards. You can change it later.
+                    </small>
+
                     <label class="form-label fw-bold">Description</label>
                     <textarea
                         name="description"
@@ -110,7 +149,7 @@
         <div>
             <h3 class="mb-1">Category List</h3>
             <p class="text-muted mb-0">
-                Manage category names, descriptions, and visibility. Existing products remain connected when a category is renamed.
+                Manage category names, icons, descriptions, and visibility. Existing products remain connected when a category is renamed.
             </p>
         </div>
 
@@ -122,6 +161,7 @@
             <thead>
                 <tr>
                     <th>#</th>
+                    <th>Icon</th>
                     <th class="text-start">Category</th>
                     <th>Slug</th>
                     <th class="text-start">Description</th>
@@ -132,8 +172,18 @@
 
             <tbody>
                 @forelse($categories as $category)
+                    @php
+                        $icon = $category->icon ?: 'bi-tag';
+                    @endphp
+
                     <tr>
                         <td>{{ $category->id }}</td>
+
+                        <td>
+                            <div class="icon mx-auto" style="width:46px;height:46px;font-size:1.25rem;">
+                                <i class="bi {{ $icon }}"></i>
+                            </div>
+                        </td>
 
                         <td class="fw-bold text-start">{{ $category->name }}</td>
 
@@ -209,6 +259,25 @@
                                             required
                                         >
 
+                                        <label class="form-label fw-bold">Icon</label>
+                                        <div class="input-group mb-2">
+                                            <span class="input-group-text">
+                                                <i class="bi {{ old('icon', $icon) }}"></i>
+                                            </span>
+
+                                            <select class="form-select" name="icon" required>
+                                                @foreach($iconOptions as $iconClass => $iconLabel)
+                                                    <option value="{{ $iconClass }}" @selected(old('icon', $icon) === $iconClass)>
+                                                        {{ $iconLabel }} — {{ $iconClass }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+
+                                        <small class="text-muted d-block mb-3">
+                                            This icon will appear on the storefront category card.
+                                        </small>
+
                                         <label class="form-label fw-bold">Description</label>
                                         <textarea
                                             name="description"
@@ -231,7 +300,7 @@
                     </div>
                 @empty
                     <tr>
-                        <td colspan="6">
+                        <td colspan="7">
                             <div class="py-5">
                                 <h5 class="mb-1">No categories yet</h5>
                                 <p class="text-muted mb-3">Start by adding your first storefront category.</p>

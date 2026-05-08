@@ -8,29 +8,30 @@
 <header class="hero">
     <div class="container hero-grid">
         <div>
-            <span class="eyebrow">Premium Shopping Experience</span>
-            <h1>Elegant shopping for modern homes.</h1>
+            <span class="eyebrow">Modern E-Commerce Platform</span>
+            <h1>Build a premium shopping experience with simple management tools.</h1>
             <p>
-                HanaShop helps you manage and showcase products through a clean shopping experience and a simple admin dashboard.
+                HanaShop helps you showcase products, manage categories, handle carts, track customers,
+                and review invoices through a clean storefront and admin dashboard.
             </p>
 
             <div class="hero-actions">
-                <a class="btn btn-primary" href="{{ route('electric') }}">Explore Electronics</a>
-                <a class="btn btn-soft" href="{{ route('zena') }}">Shop Decor</a>
-                <a class="btn btn-soft" href="{{ route('kitchenTools') }}">Kitchen Tools</a>
+                <a class="btn btn-primary" href="{{ route('electric') }}">Explore Products</a>
+                <a class="btn btn-soft" href="{{ route('cart') }}">View Cart</a>
+                <a class="btn btn-soft" href="{{ route('login') }}">Admin Dashboard</a>
             </div>
         </div>
 
         <div class="hero-card">
             <div class="hero-card-top">
                 <div class="showcase s1">
-                    <h3>Electronics</h3>
-                    <span>Smart picks</span>
+                    <h3>Storefront</h3>
+                    <span>Premium customer experience</span>
                 </div>
 
                 <div class="showcase s2">
-                    <h3>Decor</h3>
-                    <span>Elegant style</span>
+                    <h3>Dashboard</h3>
+                    <span>Clean admin workspace</span>
                 </div>
             </div>
 
@@ -57,27 +58,27 @@
 <section class="section">
     <div class="container">
         <div class="section-head">
-            <h2>Shop by category</h2>
-            <p>Choose a collection and browse products through balanced premium glass cards.</p>
+            <h2>Browse product categories</h2>
+            <p>Use the current sample categories to browse products and test the shopping experience.</p>
         </div>
 
         <div class="grid-3">
             <a class="glass-card feature" href="{{ route('zena') }}">
                 <div class="icon">✦</div>
                 <h3>Decor</h3>
-                <p>Elegant home decor items for a premium atmosphere.</p>
+                <p>A sample category for showcasing lifestyle and home products.</p>
             </a>
 
             <a class="glass-card feature" href="{{ route('kitchenTools') }}">
                 <div class="icon">◈</div>
                 <h3>Kitchen Tools</h3>
-                <p>Useful tools for organized and comfortable cooking.</p>
+                <p>A sample category for organized product browsing and catalog testing.</p>
             </a>
 
             <a class="glass-card feature" href="{{ route('electric') }}">
                 <div class="icon">⌁</div>
                 <h3>Electronics</h3>
-                <p>Smart electronics displayed with clear product details.</p>
+                <p>A sample category for products with pricing, stock, images, and details.</p>
             </a>
         </div>
     </div>
@@ -87,7 +88,7 @@
     <div class="container">
         <div class="section-head">
             <h2>Featured products</h2>
-            <p>Premium product cards with consistent size, spacing, colors, and quick details.</p>
+            <p>Product cards display category, image, price, and quick access to detailed product pages.</p>
         </div>
 
         <div class="grid-3">
@@ -125,26 +126,26 @@
     <div class="container">
         <div class="section-head">
             <h2>Admin management features</h2>
-            <p>HanaShop includes organized management areas for products, customers, and invoices.</p>
+            <p>HanaShop includes practical management areas for products, customers, carts, checkout, and invoices.</p>
         </div>
 
         <div class="grid-3 equal-grid admin-feature-grid">
             <article class="glass-card feature admin-feature">
                 <div class="icon">＋</div>
                 <h3>Product Management</h3>
-                <p>Add, edit, and organize products from one dashboard area.</p>
+                <p>Add, edit, categorize, price, and upload product images from one dashboard area.</p>
             </article>
 
             <article class="glass-card feature admin-feature">
                 <div class="icon">◎</div>
-                <h3>Customer Management</h3>
-                <p>Keep customer information organized and easy to review.</p>
+                <h3>Cart & Checkout</h3>
+                <p>Customers can add products to a cart and complete checkout with customer details.</p>
             </article>
 
             <article class="glass-card feature admin-feature">
                 <div class="icon">▣</div>
-                <h3>Invoice Tracking</h3>
-                <p>Review quantities, prices, and totals in a clean invoice layout.</p>
+                <h3>Customer & Invoice Tracking</h3>
+                <p>Review customer records, quantities, prices, totals, and revenue from the admin dashboard.</p>
             </article>
         </div>
     </div>
@@ -156,7 +157,7 @@
             <div>
                 <span class="eyebrow">Store Administration</span>
                 <h3 class="mb-1">Manage HanaShop from one dashboard.</h3>
-                <p class="mb-0">Access products, product details, customer records, and invoice tracking.</p>
+                <p class="mb-0">Access products, customers, invoices, revenue metrics, and checkout records.</p>
             </div>
 
             <a class="btn btn-primary" href="{{ route('login') }}">Admin Login</a>

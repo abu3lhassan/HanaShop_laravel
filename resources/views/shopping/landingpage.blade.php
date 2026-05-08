@@ -20,15 +20,9 @@
             </p>
 
             <div class="hero-actions justify-content-center mt-4">
-                @if($categories->count() > 0)
-                    <a class="btn btn-primary" href="{{ route('category.show', $categories->first()->slug) }}">
-                        Start Shopping
-                    </a>
-                @else
-                    <a class="btn btn-primary" href="{{ route('cart') }}">
-                        View Cart
-                    </a>
-                @endif
+                <a class="btn btn-primary" href="#categories">
+                    Start Shopping
+                </a>
 
                 <a class="btn btn-soft" href="{{ route('cart') }}">
                     View Cart
@@ -61,7 +55,7 @@
     </div>
 </header>
 
-<section class="section">
+<section class="section" id="categories">
     <div class="container">
         <div class="section-head">
             <h2>Browse categories</h2>

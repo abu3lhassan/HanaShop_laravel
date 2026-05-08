@@ -1,0 +1,1 @@
+@extends('shopping.landingpage')

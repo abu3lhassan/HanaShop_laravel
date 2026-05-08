@@ -1,0 +1,32 @@
+<?php
+
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\Shopping;
+
+Route::get('/', [Shopping::class, 'index'])->name('index');
+Route::get('/electric', [Shopping::class, 'electric'])->name('electric');
+Route::get('/zena', [Shopping::class, 'zena'])->name('zena');
+Route::get('/kitchen-tools', [Shopping::class, 'kitchenTools'])->name('kitchenTools');
+Route::get('/product/{category}/{id}', [Shopping::class, 'productdetails'])->name('proddet');
+Route::post('/add-to-cart', [Shopping::class, 'addToCart'])->name('add_to_cart');
+
+Route::middleware('auth')->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/products', [DashboardController::class, 'products'])->name('products');
+    Route::post('/products', [DashboardController::class, 'storeProduct'])->name('products.store');
+    Route::get('/products/{id}/edit', [DashboardController::class, 'editProduct'])->name('products.edit');
+    Route::put('/products/{id}', [DashboardController::class, 'updateProduct'])->name('products.update');
+    Route::delete('/products/{id}', [DashboardController::class, 'deleteProduct'])->name('products.destroy');
+
+    Route::get('/product-details', [DashboardController::class, 'productDetails'])->name('product-details.index');
+    Route::post('/product-details', [DashboardController::class, 'storeProductDetails'])->name('product-details.store');
+
+    Route::get('/customers', [DashboardController::class, 'customers'])->name('customers.index');
+    Route::get('/invoices', [DashboardController::class, 'invoices'])->name('invoices.index');
+});
+
+Auth::routes();
+Route::get('/home', [HomeController::class, 'index'])->name('home');

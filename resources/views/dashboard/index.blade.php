@@ -6,7 +6,7 @@
         <span class="eyebrow">Admin Dashboard</span>
         <h1 class="premium-title">HanaShop Control Center</h1>
         <p class="text-muted mb-0">
-            Manage products, product details, customers, and invoices from one premium workspace.
+            Monitor store activity, revenue, products, customers, and invoices from one premium workspace.
         </p>
     </div>
 
@@ -28,16 +28,6 @@
     </div>
 
     <div class="col-md-3">
-        <a href="{{ route('product-details.index') }}" class="text-decoration-none">
-            <div class="metric premium-card">
-                <span class="metric-label">Details</span>
-                <strong>{{ $detailsCount ?? 0 }}</strong>
-                <small>Pricing and stock</small>
-            </div>
-        </a>
-    </div>
-
-    <div class="col-md-3">
         <a href="{{ route('customers.index') }}" class="text-decoration-none">
             <div class="metric premium-card">
                 <span class="metric-label">Customers</span>
@@ -52,31 +42,69 @@
             <div class="metric premium-card">
                 <span class="metric-label">Invoices</span>
                 <strong>{{ $invoicesCount ?? 0 }}</strong>
-                <small>Sales documents</small>
+                <small>Sales records</small>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-md-3">
+        <a href="{{ route('invoices.index') }}" class="text-decoration-none">
+            <div class="metric premium-card">
+                <span class="metric-label">Revenue</span>
+                <strong>SAR {{ number_format((float) ($totalRevenue ?? 0), 2) }}</strong>
+                <small>Total checkout value</small>
             </div>
         </a>
     </div>
 </div>
 
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="metric premium-card">
+            <span class="metric-label">Product Details</span>
+            <strong>{{ $detailsCount ?? 0 }}</strong>
+            <small>Pricing, stock, and images</small>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="metric premium-card">
+            <span class="metric-label">Sold Quantity</span>
+            <strong>{{ $totalSoldQuantity ?? 0 }}</strong>
+            <small>Total invoice quantity</small>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="metric premium-card">
+            <span class="metric-label">Latest Invoice</span>
+            <strong>SAR {{ number_format((float) ($latestInvoiceTotal ?? 0), 2) }}</strong>
+            <small>Most recent checkout</small>
+        </div>
+    </div>
+</div>
+
 <div class="dashboard mt-4">
     <div class="side-preview">
-        <span class="eyebrow">Quick Overview</span>
-        <h3>Store Management</h3>
+        <span class="eyebrow">Business Overview</span>
+        <h3>Store Performance</h3>
         <p class="text-muted">
-            HanaShop is organized around catalog management, customer records, and invoice tracking.
+            HanaShop now tracks checkout activity through real customer and invoice records.
         </p>
 
         <div class="side-item">
             <span class="side-dot"></span>
-            Products catalog
+            Revenue: SAR {{ number_format((float) ($totalRevenue ?? 0), 2) }}
         </div>
+
         <div class="side-item">
             <span class="side-dot"></span>
-            Product pricing and stock
+            Sold quantity: {{ $totalSoldQuantity ?? 0 }}
         </div>
+
         <div class="side-item">
             <span class="side-dot"></span>
-            Customer and invoice records
+            Latest invoice: SAR {{ number_format((float) ($latestInvoiceTotal ?? 0), 2) }}
         </div>
     </div>
 

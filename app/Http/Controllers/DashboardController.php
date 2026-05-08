@@ -23,7 +23,19 @@ class DashboardController extends Controller
         $customersCount = Costumers::count();
         $invoicesCount = DB::table('invioces')->count();
 
-        return view('dashboard.index', compact('productsCount', 'detailsCount', 'customersCount', 'invoicesCount'));
+        $totalRevenue = (float) DB::table('invioces')->sum('total');
+        $totalSoldQuantity = (int) DB::table('invioces')->sum('qty');
+        $latestInvoiceTotal = (float) (DB::table('invioces')->latest()->value('total') ?? 0);
+
+        return view('dashboard.index', compact(
+            'productsCount',
+            'detailsCount',
+            'customersCount',
+            'invoicesCount',
+            'totalRevenue',
+            'totalSoldQuantity',
+            'latestInvoiceTotal'
+        ));
     }
 
     public function products()

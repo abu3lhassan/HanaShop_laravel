@@ -128,7 +128,20 @@ class DashboardController extends Controller
 
     public function invoices()
     {
-        $invoices = DB::table('invioces')->latest()->get();
+        $invoices = DB::table('invioces')
+            ->leftJoin('costumers', 'invioces.costumer_id', '=', 'costumers.id')
+            ->leftJoin('products', 'invioces.products_id', '=', 'products.id')
+            ->select(
+                'invioces.*',
+                'costumers.name as customer_name',
+                'costumers.email as customer_email',
+                'costumers.phone as customer_phone',
+                'products.name as product_name',
+                'products.category as product_category'
+            )
+            ->orderByDesc('invioces.id')
+            ->get();
+
         return view('dashboard.invoices', compact('invoices'));
     }
 }

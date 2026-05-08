@@ -12,6 +12,7 @@ Route::get('/electric', [Shopping::class, 'electric'])->name('electric');
 Route::get('/zena', [Shopping::class, 'zena'])->name('zena');
 Route::get('/kitchen-tools', [Shopping::class, 'kitchenTools'])->name('kitchenTools');
 
+Route::get('/category/{slug}', [Shopping::class, 'category'])->name('category.show');
 Route::get('/product/{category}/{id}', [Shopping::class, 'productdetails'])->name('proddet');
 
 Route::get('/cart', [Shopping::class, 'cart'])->name('cart');

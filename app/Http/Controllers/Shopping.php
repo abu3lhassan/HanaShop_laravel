@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -9,42 +10,70 @@ class Shopping extends Controller
 {
     public function index()
     {
-        $electronics = $this->productsByCategory('electronics')->limit(3)->get();
-        $decor = $this->productsByCategory('decor')->limit(3)->get();
-        $kitchenTools = $this->productsByCategory('kitchen')->limit(3)->get();
+        $categories = $this->activeCategories();
 
-        return view('shopping.landingpage', compact('electronics', 'decor', 'kitchenTools'));
+        $featuredProducts = DB::table('products')
+            ->leftJoinSub($this->latestDetailsQuery(), 'latest_details', function ($join) {
+                $join->on('products.id', '=', 'latest_details.id_products');
+            })
+            ->leftJoin('products__details', 'products__details.id', '=', 'latest_details.latest_detail_id')
+            ->join('categories', 'products.category', '=', 'categories.slug')
+            ->where('categories.is_active', true)
+            ->select(
+                'products.id',
+                'products.name',
+                'products.Description',
+                'products.category',
+                'categories.name as category_name',
+                DB::raw('COALESCE(products__details.price, 0) as price'),
+                DB::raw('COALESCE(products__details.qty, 0) as qty'),
+                DB::raw("COALESCE(products__details.color, 'Premium') as color"),
+                DB::raw("COALESCE(products__details.image, 'https://images.unsplash.com/photo-1498049794561-7780e7231661?auto=format&fit=crop&w=900&q=80') as image")
+            )
+            ->orderByDesc('products.id')
+            ->limit(9)
+            ->get();
+
+        return view('shopping.landingpage', compact('categories', 'featuredProducts'));
+    }
+
+    public function category($slug)
+    {
+        $category = Category::where('slug', $slug)
+            ->where('is_active', true)
+            ->firstOrFail();
+
+        $products = $this->productsByCategory($category->slug)->get();
+
+        return view('shopping.category', [
+            'categoryRecord' => $category,
+            'category' => $category->slug,
+            'products' => $products,
+        ]);
     }
 
     public function electric()
     {
-        $products = $this->productsByCategory('electronics')->get();
-        return view('shopping.electric', compact('products'));
+        return redirect()->route('category.show', ['slug' => 'electronics']);
     }
 
     public function zena()
     {
-        $products = $this->productsByCategory('decor')->get();
-        return view('shopping.zena', compact('products'));
+        return redirect()->route('category.show', ['slug' => 'decor']);
     }
 
     public function kitchenTools()
     {
-        $products = $this->productsByCategory('kitchen')->get();
-        return view('shopping.kitchenTools', compact('products'));
+        return redirect()->route('category.show', ['slug' => 'kitchen']);
     }
 
     public function productdetails($category, $id)
     {
-        $allowedCategories = [
-            'electronics',
-            'decor',
-            'kitchen',
-        ];
+        $categoryRecord = Category::where('slug', $category)
+            ->where('is_active', true)
+            ->firstOrFail();
 
-        abort_unless(in_array($category, $allowedCategories, true), 404);
-
-        $product = $this->productsByCategory($category)
+        $product = $this->productsByCategory($categoryRecord->slug)
             ->where('products.id', $id)
             ->first();
 
@@ -52,7 +81,8 @@ class Shopping extends Controller
 
         return view('shopping.product_details', [
             'prod' => $product,
-            'category' => $category,
+            'category' => $categoryRecord->slug,
+            'categoryRecord' => $categoryRecord,
         ]);
     }
 
@@ -74,11 +104,15 @@ class Shopping extends Controller
     {
         $validated = $request->validate([
             'product_id' => ['required', 'integer'],
-            'category' => ['required', 'string', 'in:electronics,decor,kitchen'],
+            'category' => ['required', 'string', 'exists:categories,slug'],
             'quantity' => ['nullable', 'integer', 'min:1'],
         ]);
 
-        $product = $this->productsByCategory($validated['category'])
+        $category = Category::where('slug', $validated['category'])
+            ->where('is_active', true)
+            ->firstOrFail();
+
+        $product = $this->productsByCategory($category->slug)
             ->where('products.id', $validated['product_id'])
             ->first();
 
@@ -87,14 +121,15 @@ class Shopping extends Controller
         $quantity = (int) ($validated['quantity'] ?? 1);
         $cart = session()->get('cart', []);
 
-        $cartKey = $validated['category'] . '_' . $product->id;
+        $cartKey = $category->slug . '_' . $product->id;
 
         if (isset($cart[$cartKey])) {
             $cart[$cartKey]['quantity'] += $quantity;
         } else {
             $cart[$cartKey] = [
                 'id' => $product->id,
-                'category' => $validated['category'],
+                'category' => $category->slug,
+                'category_name' => $category->name,
                 'name' => $product->name,
                 'description' => $product->Description,
                 'price' => (float) $product->price,
@@ -197,12 +232,8 @@ class Shopping extends Controller
 
     private function productsByCategory(string $category)
     {
-        $latestDetails = DB::table('products__details')
-            ->select('id_products', DB::raw('MAX(id) as latest_detail_id'))
-            ->groupBy('id_products');
-
         return DB::table('products')
-            ->leftJoinSub($latestDetails, 'latest_details', function ($join) {
+            ->leftJoinSub($this->latestDetailsQuery(), 'latest_details', function ($join) {
                 $join->on('products.id', '=', 'latest_details.id_products');
             })
             ->leftJoin('products__details', 'products__details.id', '=', 'latest_details.latest_detail_id')
@@ -218,5 +249,19 @@ class Shopping extends Controller
                 DB::raw("COALESCE(products__details.image, 'https://images.unsplash.com/photo-1498049794561-7780e7231661?auto=format&fit=crop&w=900&q=80') as image")
             )
             ->orderByDesc('products.id');
+    }
+
+    private function latestDetailsQuery()
+    {
+        return DB::table('products__details')
+            ->select('id_products', DB::raw('MAX(id) as latest_detail_id'))
+            ->groupBy('id_products');
+    }
+
+    private function activeCategories()
+    {
+        return Category::where('is_active', true)
+            ->orderBy('name')
+            ->get();
     }
 }

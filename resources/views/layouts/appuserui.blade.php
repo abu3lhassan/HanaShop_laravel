@@ -2,6 +2,10 @@
 <html lang="en">
 @php
     $cartCount = collect(session('cart', []))->sum('quantity');
+
+    $navCategories = \App\Models\Category::where('is_active', true)
+        ->orderBy('name')
+        ->get();
 @endphp
 
 <head>
@@ -49,22 +53,32 @@
                         </a>
                     </li>
 
-                    <li class="nav-item">
-                        <a class="nav-link fw-bold {{ request()->routeIs('electric') ? 'active' : '' }}" href="{{ route('electric') }}">
-                            Electronics
+                    <li class="nav-item dropdown">
+                        <a
+                            class="nav-link fw-bold dropdown-toggle {{ request()->routeIs('category.show') || request()->routeIs('electric') || request()->routeIs('zena') || request()->routeIs('kitchenTools') ? 'active' : '' }}"
+                            href="#"
+                            role="button"
+                            data-bs-toggle="dropdown"
+                            aria-expanded="false"
+                        >
+                            Categories
                         </a>
-                    </li>
 
-                    <li class="nav-item">
-                        <a class="nav-link fw-bold {{ request()->routeIs('zena') ? 'active' : '' }}" href="{{ route('zena') }}">
-                            Decor
-                        </a>
-                    </li>
-
-                    <li class="nav-item">
-                        <a class="nav-link fw-bold {{ request()->routeIs('kitchenTools') ? 'active' : '' }}" href="{{ route('kitchenTools') }}">
-                            Kitchen Tools
-                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end rounded-4 border-0 shadow">
+                            @forelse($navCategories as $category)
+                                <li>
+                                    <a class="dropdown-item fw-semibold" href="{{ route('category.show', $category->slug) }}">
+                                        {{ $category->name }}
+                                    </a>
+                                </li>
+                            @empty
+                                <li>
+                                    <span class="dropdown-item text-muted">
+                                        No categories yet
+                                    </span>
+                                </li>
+                            @endforelse
+                        </ul>
                     </li>
 
                     <li class="nav-item">

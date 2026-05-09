@@ -6,8 +6,10 @@ use App\Models\Category;
 use App\Models\Costumers;
 use App\Models\Products;
 use App\Models\Products_Details;
+use App\Models\StoreSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class DashboardController extends Controller
@@ -292,6 +294,72 @@ class DashboardController extends Controller
         abort_unless($invoice, 404);
 
         return view('dashboard.invoice_show', compact('invoice'));
+    }
+
+    public function settings()
+    {
+        $settings = StoreSetting::current();
+
+        return view('dashboard.settings', compact('settings'));
+    }
+
+    public function updateSettings(Request $request)
+    {
+        $settings = StoreSetting::current();
+
+        $validated = $request->validate([
+            'store_name' => ['required', 'string', 'max:80'],
+            'store_description' => ['nullable', 'string', 'max:180'],
+            'business_name' => ['nullable', 'string', 'max:120'],
+            'vat_number' => ['nullable', 'string', 'max:60'],
+            'cr_number' => ['nullable', 'string', 'max:60'],
+            'address' => ['nullable', 'string', 'max:180'],
+            'city' => ['nullable', 'string', 'max:80'],
+            'country' => ['nullable', 'string', 'max:80'],
+            'email' => ['nullable', 'email', 'max:120'],
+            'phone' => ['nullable', 'string', 'max:40'],
+            'whatsapp' => ['nullable', 'string', 'max:40'],
+            'vat_rate' => ['required', 'numeric', 'min:0', 'max:100'],
+            'invoice_note' => ['nullable', 'string', 'max:500'],
+            'logo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp,svg', 'max:2048'],
+            'favicon' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp,ico', 'max:1024'],
+        ]);
+
+        $settingsData = [
+            'store_name' => $validated['store_name'],
+            'store_description' => $validated['store_description'] ?? null,
+            'business_name' => $validated['business_name'] ?? null,
+            'vat_number' => $validated['vat_number'] ?? null,
+            'cr_number' => $validated['cr_number'] ?? null,
+            'address' => $validated['address'] ?? null,
+            'city' => $validated['city'] ?? null,
+            'country' => $validated['country'] ?? null,
+            'email' => $validated['email'] ?? null,
+            'phone' => $validated['phone'] ?? null,
+            'whatsapp' => $validated['whatsapp'] ?? null,
+            'vat_rate' => $validated['vat_rate'],
+            'invoice_note' => $validated['invoice_note'] ?? null,
+        ];
+
+        if ($request->hasFile('logo')) {
+            if ($settings->logo_path) {
+                Storage::disk('public')->delete($settings->logo_path);
+            }
+
+            $settingsData['logo_path'] = $request->file('logo')->store('store', 'public');
+        }
+
+        if ($request->hasFile('favicon')) {
+            if ($settings->favicon_path) {
+                Storage::disk('public')->delete($settings->favicon_path);
+            }
+
+            $settingsData['favicon_path'] = $request->file('favicon')->store('store', 'public');
+        }
+
+        $settings->update($settingsData);
+
+        return redirect()->route('settings.index')->with('success', 'Store settings updated successfully.');
     }
 
     private function uniqueCategorySlug(string $name, ?int $ignoreId = null): string

@@ -5,15 +5,38 @@
     $invoiceDate = \Carbon\Carbon::parse($invoice->created_at)->format('Y-m-d H:i');
     $categoryName = $invoice->category_name ?? ucfirst(str_replace('-', ' ', $invoice->product_category ?? 'Category'));
 
+    $storeSettings = null;
+
+    try {
+        $storeSettings = \App\Models\StoreSetting::current();
+    } catch (\Throwable $exception) {
+        $storeSettings = null;
+    }
+
+    $storeName = $storeSettings->store_name ?? 'HanaShop';
+    $businessName = $storeSettings->business_name ?: $storeName;
+    $vatNumber = $storeSettings->vat_number ?: 'Not set';
+    $crNumber = $storeSettings->cr_number ?: 'Not set';
+    $storeAddress = $storeSettings->address ?: 'Not set';
+    $storeCity = $storeSettings->city ?: null;
+    $storeCountry = $storeSettings->country ?: null;
+    $storeLogoPath = $storeSettings->logo_path ?? null;
+    $invoiceNote = $storeSettings->invoice_note
+        ?: 'This invoice was generated from ' . $storeName . ' checkout records.';
+
     /*
         VAT-ready display.
         Current invoice total is treated as subtotal because the current database schema
         does not store VAT separately yet.
     */
     $subtotal = (float) $invoice->total;
-    $vatRate = 0.15;
-    $vatAmount = $subtotal * $vatRate;
+    $vatRate = (float) ($storeSettings->vat_rate ?? 15);
+    $vatAmount = $subtotal * ($vatRate / 100);
     $grandTotal = $subtotal + $vatAmount;
+
+    $fullBusinessAddress = collect([$storeAddress, $storeCity, $storeCountry])
+        ->filter()
+        ->implode(', ');
 @endphp
 
 <style>
@@ -55,10 +78,27 @@
         text-align: right;
     }
 
+    .invoice-brand-line {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 8px;
+    }
+
+    .invoice-logo {
+        width: 44px;
+        height: 44px;
+        object-fit: contain;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        padding: 4px;
+        background: #ffffff;
+    }
+
     .invoice-brand {
         font-size: 26px;
         font-weight: 800;
-        margin: 0 0 6px 0;
+        margin: 0;
         color: #111827;
     }
 
@@ -356,6 +396,21 @@
             text-align: right;
         }
 
+        .print-brand-line {
+            display: block;
+            margin-bottom: 2mm;
+        }
+
+        .print-logo {
+            width: 15mm;
+            height: 15mm;
+            object-fit: contain;
+            border: 1px solid #d1d5db;
+            padding: 1.5mm;
+            margin-bottom: 2mm;
+            background: #ffffff;
+        }
+
         .print-brand {
             font-size: 19px;
             font-weight: 800;
@@ -580,7 +635,7 @@
             <span class="eyebrow">Invoice Details</span>
             <h1 class="premium-title mb-1">Invoice #{{ $invoice->id }}</h1>
             <p class="text-muted mb-0">
-                VAT-ready invoice layout for HanaShop checkout records.
+                VAT-ready invoice layout for {{ $storeName }} checkout records.
             </p>
         </div>
 
@@ -599,10 +654,22 @@
 <div class="invoice-screen-document">
     <div class="invoice-top">
         <div class="invoice-top-left">
-            <h2 class="invoice-brand">HanaShop</h2>
-            <p class="invoice-small">Seller: HanaShop</p>
-            <p class="invoice-small">VAT Number: VAT-NUMBER-HERE</p>
-            <p class="invoice-small">CR Number: CR-NUMBER-HERE</p>
+            <div class="invoice-brand-line">
+                @if($storeLogoPath)
+                    <img
+                        src="{{ asset('storage/' . $storeLogoPath) }}"
+                        alt="{{ $storeName }}"
+                        class="invoice-logo"
+                    >
+                @endif
+
+                <h2 class="invoice-brand">{{ $storeName }}</h2>
+            </div>
+
+            <p class="invoice-small">Seller: {{ $businessName }}</p>
+            <p class="invoice-small">VAT Number: {{ $vatNumber }}</p>
+            <p class="invoice-small">CR Number: {{ $crNumber }}</p>
+            <p class="invoice-small">Address: {{ $fullBusinessAddress }}</p>
         </div>
 
         <div class="invoice-top-right">
@@ -656,7 +723,7 @@
 
                 <p class="invoice-row-text">
                     <strong>VAT Rate:</strong>
-                    15%
+                    {{ number_format($vatRate, 2) }}%
                 </p>
 
                 <p class="invoice-row-text">
@@ -709,9 +776,7 @@
     <div class="invoice-summary-wrap">
         <div class="invoice-summary-left">
             <div class="invoice-note">
-                This invoice was generated from HanaShop checkout records. VAT number, CR number,
-                and seller details are placeholders and should be replaced with official business
-                information before production use.
+                {{ $invoiceNote }}
             </div>
         </div>
 
@@ -724,7 +789,7 @@
                     </tr>
 
                     <tr>
-                        <td class="label">VAT 15%</td>
+                        <td class="label">VAT {{ number_format($vatRate, 2) }}%</td>
                         <td class="amount">SAR {{ number_format($vatAmount, 2) }}</td>
                     </tr>
 
@@ -739,7 +804,7 @@
 
     <div class="invoice-footer">
         <div class="invoice-footer-left">
-            Prepared By: HanaShop System
+            Prepared By: {{ $storeName }} System
         </div>
 
         <div class="invoice-footer-right">
@@ -753,10 +818,22 @@
 <div class="invoice-print-document">
     <div class="print-header">
         <div class="print-header-left">
-            <h2 class="print-brand">HanaShop</h2>
-            <p class="print-line">Seller: HanaShop</p>
-            <p class="print-line">VAT Number: VAT-NUMBER-HERE</p>
-            <p class="print-line">CR Number: CR-NUMBER-HERE</p>
+            <div class="print-brand-line">
+                @if($storeLogoPath)
+                    <img
+                        src="{{ asset('storage/' . $storeLogoPath) }}"
+                        alt="{{ $storeName }}"
+                        class="print-logo"
+                    >
+                @endif
+
+                <h2 class="print-brand">{{ $storeName }}</h2>
+            </div>
+
+            <p class="print-line">Seller: {{ $businessName }}</p>
+            <p class="print-line">VAT Number: {{ $vatNumber }}</p>
+            <p class="print-line">CR Number: {{ $crNumber }}</p>
+            <p class="print-line">Address: {{ $fullBusinessAddress }}</p>
         </div>
 
         <div class="print-header-right">
@@ -783,7 +860,7 @@
                 <div class="print-box-title">Invoice Info</div>
                 <p class="print-line"><strong>Invoice No:</strong> #{{ $invoice->id }}</p>
                 <p class="print-line"><strong>Invoice Date:</strong> {{ $invoiceDate }}</p>
-                <p class="print-line"><strong>VAT Rate:</strong> 15%</p>
+                <p class="print-line"><strong>VAT Rate:</strong> {{ number_format($vatRate, 2) }}%</p>
                 <p class="print-line"><strong>Status:</strong> Issued</p>
             </div>
         </div>
@@ -825,9 +902,7 @@
     <div class="print-summary">
         <div class="print-summary-note">
             <div class="print-note">
-                This invoice was generated from HanaShop checkout records. VAT number, CR number,
-                and seller details are placeholders and should be replaced with official business
-                information before production use.
+                {{ $invoiceNote }}
             </div>
         </div>
 
@@ -840,7 +915,7 @@
                     </tr>
 
                     <tr>
-                        <td class="print-total-label">VAT 15%</td>
+                        <td class="print-total-label">VAT {{ number_format($vatRate, 2) }}%</td>
                         <td class="print-total-amount">SAR {{ number_format($vatAmount, 2) }}</td>
                     </tr>
 
@@ -855,7 +930,7 @@
 
     <div class="print-footer">
         <div class="print-footer-left">
-            Prepared By: HanaShop System
+            Prepared By: {{ $storeName }} System
         </div>
 
         <div class="print-footer-right">

@@ -43,6 +43,9 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/invoices', [DashboardController::class, 'invoices'])->name('invoices.index');
     Route::get('/invoices/{id}', [DashboardController::class, 'showInvoice'])->name('invoices.show');
+
+    Route::get('/settings', [DashboardController::class, 'settings'])->name('settings.index');
+    Route::put('/settings', [DashboardController::class, 'updateSettings'])->name('settings.update');
 });
 
 Auth::routes();

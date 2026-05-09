@@ -1,11 +1,28 @@
 <!doctype html>
+@php
+    $dashboardSettings = null;
+
+    try {
+        $dashboardSettings = \App\Models\StoreSetting::current();
+    } catch (\Throwable $exception) {
+        $dashboardSettings = null;
+    }
+
+    $dashboardStoreName = $dashboardSettings->store_name ?? 'HanaShop';
+    $dashboardLogoPath = $dashboardSettings->logo_path ?? null;
+    $dashboardFaviconPath = $dashboardSettings->favicon_path ?? null;
+@endphp
 <html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>HanaShop Dashboard</title>
+    <title>{{ $dashboardStoreName }} Dashboard</title>
+
+    @if($dashboardFaviconPath)
+        <link rel="icon" type="image/png" href="{{ asset('storage/' . $dashboardFaviconPath) }}">
+    @endif
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -21,8 +38,19 @@
     <div class="row">
         <aside class="col-12 col-lg-3 col-xl-2 admin-sidebar p-4">
             <a class="brand text-white mb-4 d-flex" href="{{ route('dashboard') }}">
-                <span class="brand-mark">H</span>
-                <span>HanaShop</span>
+                @if($dashboardLogoPath)
+                    <span class="brand-mark overflow-hidden bg-white">
+                        <img
+                            src="{{ asset('storage/' . $dashboardLogoPath) }}"
+                            alt="{{ $dashboardStoreName }}"
+                            style="width: 100%; height: 100%; object-fit: cover;"
+                        >
+                    </span>
+                @else
+                    <span class="brand-mark">{{ strtoupper(substr($dashboardStoreName, 0, 1)) }}</span>
+                @endif
+
+                <span>{{ $dashboardStoreName }}</span>
             </a>
 
             <nav class="d-grid gap-2">
@@ -42,8 +70,12 @@
                     <i class="bi bi-people"></i> Customers
                 </a>
 
-                <a class="admin-link {{ request()->routeIs('invoices.index') ? 'active' : '' }}" href="{{ route('invoices.index') }}">
+                <a class="admin-link {{ request()->routeIs('invoices.index') || request()->routeIs('invoices.show') ? 'active' : '' }}" href="{{ route('invoices.index') }}">
                     <i class="bi bi-receipt"></i> Invoices
+                </a>
+
+                <a class="admin-link {{ request()->routeIs('settings.index') ? 'active' : '' }}" href="{{ route('settings.index') }}">
+                    <i class="bi bi-gear"></i> Settings
                 </a>
 
                 <a class="admin-link" href="{{ route('index') }}">

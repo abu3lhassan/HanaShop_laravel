@@ -6,15 +6,37 @@
     $navCategories = \App\Models\Category::where('is_active', true)
         ->orderBy('name')
         ->get();
+
+    $storeSettings = null;
+
+    try {
+        $storeSettings = \App\Models\StoreSetting::current();
+    } catch (\Throwable $exception) {
+        $storeSettings = null;
+    }
+
+    $storeName = $storeSettings->store_name ?? 'HanaShop';
+    $storeDescription = $storeSettings->store_description
+        ?? 'A modern e-commerce platform with a premium shopping and admin experience.';
+
+    $storeLogoPath = $storeSettings->logo_path ?? null;
+    $storeFaviconPath = $storeSettings->favicon_path ?? null;
+    $storeEmail = $storeSettings->email ?? null;
+    $storePhone = $storeSettings->phone ?? null;
+    $storeWhatsapp = $storeSettings->whatsapp ?? null;
 @endphp
 
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <meta name="description" content="HanaShop is a modern e-commerce platform with a premium shopping and admin experience.">
+    <meta name="description" content="{{ $storeDescription }}">
 
-    <title>HanaShop | Modern E-Commerce Platform</title>
+    <title>{{ $storeName }} | Modern E-Commerce Platform</title>
+
+    @if($storeFaviconPath)
+        <link rel="icon" type="image/png" href="{{ asset('storage/' . $storeFaviconPath) }}">
+    @endif
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -23,14 +45,45 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="{{ asset('css/hanashop.css') }}">
+
+    <style>
+        .store-brand-logo {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+        }
+
+        .brand-mark.store-logo-wrap {
+            background: #ffffff;
+            overflow: hidden;
+            padding: 4px;
+        }
+
+        .footer-store-meta {
+            color: rgba(255, 255, 255, 0.72);
+            font-size: 0.95rem;
+        }
+    </style>
 </head>
 
 <body class="laravel-shell">
     <nav class="navbar navbar-expand-lg premium-nav sticky-top">
         <div class="container">
-            <a class="brand navbar-brand" href="{{ route('index') }}" aria-label="HanaShop home">
-                <span class="brand-mark">H</span>
-                <span>HanaShop</span>
+            <a class="brand navbar-brand" href="{{ route('index') }}" aria-label="{{ $storeName }} home">
+                @if($storeLogoPath)
+                    <span class="brand-mark store-logo-wrap">
+                        <img
+                            src="{{ asset('storage/' . $storeLogoPath) }}"
+                            alt="{{ $storeName }}"
+                            class="store-brand-logo"
+                        >
+                    </span>
+                @else
+                    <span class="brand-mark">{{ strtoupper(substr($storeName, 0, 1)) }}</span>
+                @endif
+
+                <span>{{ $storeName }}</span>
             </a>
 
             <button
@@ -117,8 +170,30 @@
     <footer class="footer">
         <div class="container footer-inner">
             <div>
-                <strong>HanaShop</strong>
-                <span>A modern e-commerce platform with a premium shopping and admin experience.</span>
+                <strong>{{ $storeName }}</strong>
+                <span>{{ $storeDescription }}</span>
+
+                @if($storeEmail || $storePhone || $storeWhatsapp)
+                    <div class="footer-store-meta mt-2">
+                        @if($storeEmail)
+                            <span class="me-3">
+                                <i class="bi bi-envelope me-1"></i>{{ $storeEmail }}
+                            </span>
+                        @endif
+
+                        @if($storePhone)
+                            <span class="me-3">
+                                <i class="bi bi-telephone me-1"></i>{{ $storePhone }}
+                            </span>
+                        @endif
+
+                        @if($storeWhatsapp)
+                            <span>
+                                <i class="bi bi-whatsapp me-1"></i>{{ $storeWhatsapp }}
+                            </span>
+                        @endif
+                    </div>
+                @endif
             </div>
 
             <div class="d-flex gap-3 flex-wrap align-items-center">

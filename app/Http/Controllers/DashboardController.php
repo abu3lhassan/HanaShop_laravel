@@ -26,6 +26,70 @@ class DashboardController extends Controller
         $totalSoldQuantity = (int) DB::table('invioces')->sum('qty');
         $latestInvoiceTotal = (float) (DB::table('invioces')->latest()->value('total') ?? 0);
 
+        $revenueToday = (float) DB::table('invioces')
+            ->whereDate('created_at', now()->toDateString())
+            ->sum('total');
+
+        $revenueThisMonth = (float) DB::table('invioces')
+            ->whereYear('created_at', now()->year)
+            ->whereMonth('created_at', now()->month)
+            ->sum('total');
+
+        $lowStockProducts = DB::table('products')
+            ->leftJoin('products__details', 'products.id', '=', 'products__details.id_products')
+            ->leftJoin('categories', 'products.category', '=', 'categories.slug')
+            ->select(
+                'products.id',
+                'products.name',
+                'products.category',
+                'categories.name as category_name',
+                'products__details.qty',
+                'products__details.price'
+            )
+            ->whereIn('products__details.id', function ($query) {
+                $query->select(DB::raw('MAX(id)'))
+                    ->from('products__details')
+                    ->groupBy('id_products');
+            })
+            ->where('products__details.qty', '<=', 5)
+            ->orderBy('products__details.qty')
+            ->limit(5)
+            ->get();
+
+        $latestInvoices = DB::table('invioces')
+            ->leftJoin('costumers', 'invioces.costumer_id', '=', 'costumers.id')
+            ->leftJoin('products', 'invioces.products_id', '=', 'products.id')
+            ->select(
+                'invioces.id',
+                'invioces.qty',
+                'invioces.total',
+                'invioces.created_at',
+                'costumers.name as customer_name',
+                'products.name as product_name'
+            )
+            ->orderByDesc('invioces.id')
+            ->limit(5)
+            ->get();
+
+        $latestCustomers = DB::table('costumers')
+            ->select('id', 'name', 'email', 'phone', 'created_at')
+            ->orderByDesc('id')
+            ->limit(5)
+            ->get();
+
+        $topSellingProducts = DB::table('invioces')
+            ->leftJoin('products', 'invioces.products_id', '=', 'products.id')
+            ->select(
+                'products.id',
+                'products.name',
+                DB::raw('SUM(invioces.qty) as sold_qty'),
+                DB::raw('SUM(invioces.total) as revenue')
+            )
+            ->groupBy('products.id', 'products.name')
+            ->orderByDesc('sold_qty')
+            ->limit(5)
+            ->get();
+
         return view('dashboard.index', compact(
             'productsCount',
             'categoriesCount',
@@ -34,7 +98,13 @@ class DashboardController extends Controller
             'invoicesCount',
             'totalRevenue',
             'totalSoldQuantity',
-            'latestInvoiceTotal'
+            'latestInvoiceTotal',
+            'revenueToday',
+            'revenueThisMonth',
+            'lowStockProducts',
+            'latestInvoices',
+            'latestCustomers',
+            'topSellingProducts'
         ));
     }
 

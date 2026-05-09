@@ -66,7 +66,7 @@
             <div class="row g-4">
                 <div class="col-lg-8">
                     <div class="premium-card p-3 p-lg-4">
-                        <div class="d-flex justify-content-between align-items-center gap-3 flex-wrap mb-3">
+                        <div class="d-flex justify-content-between align-items-center gap-3 flex-wrap mb-4">
                             <div>
                                 <h3 class="mb-1">Cart Products</h3>
                                 <p class="text-muted mb-0">Update quantities or remove products from your cart.</p>
@@ -78,99 +78,101 @@
                             </form>
                         </div>
 
-                        <div class="table-responsive">
-                            <table class="table align-middle text-center mb-0">
-                                <thead>
-                                    <tr>
-                                        <th class="text-start">Product</th>
-                                        <th>Category</th>
-                                        <th>Price</th>
-                                        <th>Qty</th>
-                                        <th>Total</th>
-                                        <th>Action</th>
-                                    </tr>
-                                </thead>
+                        <div class="d-grid gap-3">
+                            @foreach($cart as $cartKey => $item)
+                                @php
+                                    $imageUrl = null;
 
-                                <tbody>
-                                    @foreach($cart as $cartKey => $item)
-                                        @php
-                                            $imageUrl = null;
+                                    if (!empty($item['image'])) {
+                                        $imageUrl = str_starts_with($item['image'], 'http')
+                                            ? $item['image']
+                                            : asset('storage/' . $item['image']);
+                                    }
 
-                                            if (!empty($item['image'])) {
-                                                $imageUrl = str_starts_with($item['image'], 'http')
-                                                    ? $item['image']
-                                                    : asset('storage/' . $item['image']);
-                                            }
+                                    $itemTotal = ((float) $item['price']) * ((int) $item['quantity']);
+                                    $availableStock = $item['stock'] ?? null;
+                                    $categoryLabel = $item['category_name'] ?? ucfirst(str_replace('-', ' ', $item['category']));
+                                    $formId = 'update-cart-' . md5($cartKey);
+                                @endphp
 
-                                            $itemTotal = ((float) $item['price']) * ((int) $item['quantity']);
-
-                                            $categoryLabel = match($item['category']) {
-                                                'electronics' => 'Electronics',
-                                                'decor' => 'Decor',
-                                                'kitchen' => 'Kitchen Tools',
-                                                default => ucfirst($item['category']),
-                                            };
-                                        @endphp
-
-                                        <tr>
-                                            <td class="text-start">
-                                                <div class="d-flex align-items-center gap-3">
-                                                    <div
-                                                        class="product-media slate"
-                                                        style="width:74px;height:74px;min-width:74px;border-radius:20px;@if($imageUrl) background-image:linear-gradient(135deg,rgba(15,23,42,.45),rgba(15,23,42,.1)),url('{{ $imageUrl }}');background-size:cover;background-position:center; @endif"
-                                                    >
-                                                        @unless($imageUrl)
-                                                            <i class="bi bi-bag"></i>
-                                                        @endunless
-                                                    </div>
-
-                                                    <div>
-                                                        <div class="fw-bold">{{ $item['name'] }}</div>
-                                                        <small class="text-muted">{{ $item['color'] ?? 'Premium' }}</small>
-                                                    </div>
+                                <div class="glass-card feature p-3 p-lg-4">
+                                    <div class="row g-4 align-items-center">
+                                        <div class="col-lg-5">
+                                            <div class="d-flex align-items-center gap-3">
+                                                <div
+                                                    class="product-media slate"
+                                                    style="width:78px;height:78px;min-width:78px;border-radius:22px;@if($imageUrl) background-image:linear-gradient(135deg,rgba(15,23,42,.45),rgba(15,23,42,.1)),url('{{ $imageUrl }}');background-size:cover;background-position:center; @endif"
+                                                >
+                                                    @unless($imageUrl)
+                                                        <i class="bi bi-bag"></i>
+                                                    @endunless
                                                 </div>
-                                            </td>
 
-                                            <td>
-                                                <span class="status">{{ $categoryLabel }}</span>
-                                            </td>
+                                                <div>
+                                                    <div class="fw-bold">{{ $item['name'] }}</div>
+                                                    <small class="text-muted d-block">{{ $item['color'] ?? 'Premium' }}</small>
+                                                    <span class="status mt-2 d-inline-block">{{ $categoryLabel }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
 
-                                            <td>SAR {{ number_format((float) $item['price'], 2) }}</td>
+                                        <div class="col-lg-2 col-md-4 col-6">
+                                            <span class="text-muted d-block small">Price</span>
+                                            <strong>SAR {{ number_format((float) $item['price'], 2) }}</strong>
+                                        </div>
 
-                                            <td>
-                                                <form action="{{ route('cart.update') }}" method="POST" class="d-flex gap-2 justify-content-center">
-                                                    @csrf
-                                                    <input type="hidden" name="cart_key" value="{{ $cartKey }}">
-                                                    <input
-                                                        type="number"
-                                                        name="quantity"
-                                                        value="{{ $item['quantity'] }}"
-                                                        min="1"
-                                                        class="form-control"
-                                                        style="max-width:90px"
-                                                        required
-                                                    >
-                                                    <button class="btn btn-sm btn-outline-success rounded-pill" type="submit">
-                                                        Update
-                                                    </button>
-                                                </form>
-                                            </td>
+                                        <div class="col-lg-3 col-md-4 col-6">
+                                            <label class="text-muted small mb-1 d-block">Quantity</label>
 
-                                            <td class="fw-bold">SAR {{ number_format($itemTotal, 2) }}</td>
+                                            <input
+                                                form="{{ $formId }}"
+                                                type="number"
+                                                name="quantity"
+                                                value="{{ $item['quantity'] }}"
+                                                min="1"
+                                                @if(!is_null($availableStock)) max="{{ $availableStock }}" @endif
+                                                class="form-control text-center"
+                                                style="width:96px;max-width:100%;"
+                                                required
+                                            >
 
-                                            <td>
-                                                <form action="{{ route('cart.remove') }}" method="POST" onsubmit="return confirm('Remove this product from cart?')">
-                                                    @csrf
-                                                    <input type="hidden" name="cart_key" value="{{ $cartKey }}">
-                                                    <button class="btn btn-sm btn-outline-danger rounded-pill" type="submit">
-                                                        Remove
-                                                    </button>
-                                                </form>
-                                            </td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
+                                            @if(!is_null($availableStock))
+                                                <small class="text-muted d-block mt-2">
+                                                    Available: {{ $availableStock }}
+                                                </small>
+                                            @endif
+                                        </div>
+
+                                        <div class="col-lg-2 col-md-4 col-12">
+                                            <span class="text-muted d-block small">Total</span>
+                                            <strong>SAR {{ number_format($itemTotal, 2) }}</strong>
+                                        </div>
+                                    </div>
+
+                                    <div class="d-flex justify-content-md-end justify-content-start gap-2 flex-wrap mt-4 pt-3 border-top">
+                                        <form id="{{ $formId }}" action="{{ route('cart.update') }}" method="POST" class="m-0">
+                                            @csrf
+                                            <input type="hidden" name="cart_key" value="{{ $cartKey }}">
+                                        </form>
+
+                                        <button
+                                            form="{{ $formId }}"
+                                            class="btn btn-sm btn-outline-success rounded-pill px-4"
+                                            type="submit"
+                                        >
+                                            Update
+                                        </button>
+
+                                        <form action="{{ route('cart.remove') }}" method="POST" class="m-0" onsubmit="return confirm('Remove this product from cart?')">
+                                            @csrf
+                                            <input type="hidden" name="cart_key" value="{{ $cartKey }}">
+                                            <button class="btn btn-sm btn-outline-danger rounded-pill px-4" type="submit">
+                                                Remove
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            @endforeach
                         </div>
                     </div>
                 </div>
@@ -256,7 +258,7 @@
                                 </button>
 
                                 <p class="text-muted mt-3 mb-0">
-                                    Completing checkout will create customer and invoice records in the dashboard.
+                                    Completing checkout will create customer and invoice records, then reduce product stock.
                                 </p>
                             </div>
                         </form>
@@ -265,14 +267,15 @@
             </div>
         @else
             <div class="glass-card feature text-center">
-                <div class="icon mx-auto">🛒</div>
+                <div class="icon mx-auto">
+                    <i class="bi bi-cart3"></i>
+                </div>
                 <h3>Your cart is empty</h3>
-                <p>Add products from Electronics, Decor, or Kitchen Tools to start building your cart.</p>
+                <p>Add products from any active category to start building your cart.</p>
 
                 <div class="d-flex gap-2 justify-content-center flex-wrap mt-3">
-                    <a class="btn btn-primary" href="{{ route('electric') }}">Shop Electronics</a>
-                    <a class="btn btn-soft" href="{{ route('zena') }}">Shop Decor</a>
-                    <a class="btn btn-soft" href="{{ route('kitchenTools') }}">Shop Kitchen Tools</a>
+                    <a class="btn btn-primary" href="{{ route('index') }}#categories">Browse Categories</a>
+                    <a class="btn btn-soft" href="{{ route('index') }}">Back to Store</a>
                 </div>
             </div>
         @endif

@@ -119,12 +119,27 @@ class Shopping extends Controller
         abort_unless($product, 404);
 
         $quantity = (int) ($validated['quantity'] ?? 1);
-        $cart = session()->get('cart', []);
+        $availableQty = (int) ($product->qty ?? 0);
 
+        if ($availableQty <= 0) {
+            return redirect()->back()->with('success', 'This product is currently out of stock.');
+        }
+
+        $cart = session()->get('cart', []);
         $cartKey = $category->slug . '_' . $product->id;
+        $currentCartQty = isset($cart[$cartKey]) ? (int) $cart[$cartKey]['quantity'] : 0;
+        $requestedTotalQty = $currentCartQty + $quantity;
+
+        if ($requestedTotalQty > $availableQty) {
+            return redirect()->back()->with(
+                'success',
+                'Only ' . $availableQty . ' item(s) are available in stock.'
+            );
+        }
 
         if (isset($cart[$cartKey])) {
-            $cart[$cartKey]['quantity'] += $quantity;
+            $cart[$cartKey]['quantity'] = $requestedTotalQty;
+            $cart[$cartKey]['stock'] = $availableQty;
         } else {
             $cart[$cartKey] = [
                 'id' => $product->id,
@@ -134,6 +149,7 @@ class Shopping extends Controller
                 'description' => $product->Description,
                 'price' => (float) $product->price,
                 'quantity' => $quantity,
+                'stock' => $availableQty,
                 'image' => $product->image,
                 'color' => $product->color,
             ];
@@ -153,10 +169,42 @@ class Shopping extends Controller
 
         $cart = session()->get('cart', []);
 
-        if (isset($cart[$validated['cart_key']])) {
-            $cart[$validated['cart_key']]['quantity'] = (int) $validated['quantity'];
-            session()->put('cart', $cart);
+        if (! isset($cart[$validated['cart_key']])) {
+            return redirect()->route('cart')->with('success', 'Cart item not found.');
         }
+
+        $item = $cart[$validated['cart_key']];
+        $product = $this->productsByCategory($item['category'])
+            ->where('products.id', $item['id'])
+            ->first();
+
+        if (! $product) {
+            unset($cart[$validated['cart_key']]);
+            session()->put('cart', $cart);
+
+            return redirect()->route('cart')->with('success', 'Product is no longer available and was removed from cart.');
+        }
+
+        $availableQty = (int) ($product->qty ?? 0);
+        $requestedQty = (int) $validated['quantity'];
+
+        if ($availableQty <= 0) {
+            unset($cart[$validated['cart_key']]);
+            session()->put('cart', $cart);
+
+            return redirect()->route('cart')->with('success', 'Product is out of stock and was removed from cart.');
+        }
+
+        if ($requestedQty > $availableQty) {
+            return redirect()->route('cart')->with(
+                'success',
+                'Only ' . $availableQty . ' item(s) are available for ' . $item['name'] . '.'
+            );
+        }
+
+        $cart[$validated['cart_key']]['quantity'] = $requestedQty;
+        $cart[$validated['cart_key']]['stock'] = $availableQty;
+        session()->put('cart', $cart);
 
         return redirect()->route('cart')->with('success', 'Cart updated successfully.');
     }
@@ -199,6 +247,34 @@ class Shopping extends Controller
             'address' => ['required', 'string', 'max:30'],
         ]);
 
+        foreach ($cart as $item) {
+            $latestDetail = $this->latestProductDetail((int) $item['id']);
+
+            if (! $latestDetail) {
+                return redirect()->route('cart')->with(
+                    'success',
+                    $item['name'] . ' is no longer available.'
+                );
+            }
+
+            $availableQty = (int) $latestDetail->qty;
+            $requestedQty = (int) $item['quantity'];
+
+            if ($availableQty <= 0) {
+                return redirect()->route('cart')->with(
+                    'success',
+                    $item['name'] . ' is out of stock.'
+                );
+            }
+
+            if ($requestedQty > $availableQty) {
+                return redirect()->route('cart')->with(
+                    'success',
+                    'Only ' . $availableQty . ' item(s) are available for ' . $item['name'] . '.'
+                );
+            }
+        }
+
         DB::transaction(function () use ($cart, $validated) {
             $customerId = DB::table('costumers')->insertGetId([
                 'name' => $validated['name'],
@@ -210,8 +286,15 @@ class Shopping extends Controller
             ]);
 
             foreach ($cart as $item) {
+                $latestDetail = $this->latestProductDetail((int) $item['id']);
+
+                if (! $latestDetail) {
+                    throw new \RuntimeException('Product detail not found.');
+                }
+
                 $price = (float) $item['price'];
                 $quantity = (int) $item['quantity'];
+                $newQty = max(0, ((int) $latestDetail->qty) - $quantity);
 
                 DB::table('invioces')->insert([
                     'costumer_id' => $customerId,
@@ -222,12 +305,19 @@ class Shopping extends Controller
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]);
+
+                DB::table('products__details')
+                    ->where('id', $latestDetail->id)
+                    ->update([
+                        'qty' => $newQty,
+                        'updated_at' => now(),
+                    ]);
             }
         });
 
         session()->forget('cart');
 
-        return redirect()->route('index')->with('success', 'Order completed successfully. Invoice records were created.');
+        return redirect()->route('index')->with('success', 'Order completed successfully. Invoice records were created and stock was updated.');
     }
 
     private function productsByCategory(string $category)
@@ -256,6 +346,14 @@ class Shopping extends Controller
         return DB::table('products__details')
             ->select('id_products', DB::raw('MAX(id) as latest_detail_id'))
             ->groupBy('id_products');
+    }
+
+    private function latestProductDetail(int $productId)
+    {
+        return DB::table('products__details')
+            ->where('id_products', $productId)
+            ->orderByDesc('id')
+            ->first();
     }
 
     private function activeCategories()

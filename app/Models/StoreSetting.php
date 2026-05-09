@@ -20,6 +20,7 @@ class StoreSetting extends Model
         'whatsapp',
         'vat_rate',
         'invoice_note',
+        'theme_mode',
         'logo_path',
         'favicon_path',
     ];
@@ -42,6 +43,7 @@ class StoreSetting extends Model
                 'whatsapp' => '0500000000',
                 'vat_rate' => 15.00,
                 'invoice_note' => 'This invoice was generated from HanaShop checkout records.',
+                'theme_mode' => 'light',
             ]
         );
     }

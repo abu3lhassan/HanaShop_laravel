@@ -11,6 +11,9 @@
     $dashboardStoreName = $dashboardSettings->store_name ?? 'HanaShop';
     $dashboardLogoPath = $dashboardSettings->logo_path ?? null;
     $dashboardFaviconPath = $dashboardSettings->favicon_path ?? null;
+    $dashboardThemeMode = in_array(($dashboardSettings->theme_mode ?? 'light'), ['light', 'dark'], true)
+        ? $dashboardSettings->theme_mode
+        : 'light';
 @endphp
 <html lang="en">
 <head>
@@ -33,7 +36,7 @@
     <link rel="stylesheet" href="{{ asset('css/hanashop.css') }}">
 </head>
 
-<body class="laravel-shell">
+<body class="laravel-shell theme-{{ $dashboardThemeMode }}">
 <div class="container-fluid">
     <div class="row">
         <aside class="col-12 col-lg-3 col-xl-2 admin-sidebar p-4">
@@ -43,7 +46,7 @@
                         <img
                             src="{{ asset('storage/' . $dashboardLogoPath) }}"
                             alt="{{ $dashboardStoreName }}"
-                            style="width: 100%; height: 100%; object-fit: cover;"
+                            style="width: 100%; height: 100%; object-fit: contain; padding: 4px;"
                         >
                     </span>
                 @else
@@ -76,6 +79,10 @@
 
                 <a class="admin-link {{ request()->routeIs('settings.index') ? 'active' : '' }}" href="{{ route('settings.index') }}">
                     <i class="bi bi-gear"></i> Settings
+                </a>
+
+                <a class="admin-link {{ request()->routeIs('admin-users.index') ? 'active' : '' }}" href="{{ route('admin-users.index') }}">
+                    <i class="bi bi-person-gear"></i> Admin Users
                 </a>
 
                 <a class="admin-link" href="{{ route('index') }}">

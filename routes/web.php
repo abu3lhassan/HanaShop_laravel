@@ -46,6 +46,11 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/settings', [DashboardController::class, 'settings'])->name('settings.index');
     Route::put('/settings', [DashboardController::class, 'updateSettings'])->name('settings.update');
+
+    Route::get('/admin-users', [DashboardController::class, 'adminUsers'])->name('admin-users.index');
+    Route::post('/admin-users', [DashboardController::class, 'storeAdminUser'])->name('admin-users.store');
+    Route::put('/admin-users/{id}', [DashboardController::class, 'updateAdminUser'])->name('admin-users.update');
+    Route::delete('/admin-users/{id}', [DashboardController::class, 'deleteAdminUser'])->name('admin-users.destroy');
 });
 
 Auth::routes();

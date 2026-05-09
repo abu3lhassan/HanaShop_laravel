@@ -6,7 +6,7 @@
         <span class="eyebrow">Store Configuration</span>
         <h1 class="premium-title mb-1">Store Settings</h1>
         <p class="text-muted mb-0">
-            Manage your store identity, business information, VAT details, and invoice defaults.
+            Manage your store identity, business information, theme mode, VAT details, and invoice defaults.
         </p>
     </div>
 
@@ -78,7 +78,7 @@
                                 <img
                                     src="{{ asset('storage/' . $settings->logo_path) }}"
                                     alt="Store logo"
-                                    style="width: 54px; height: 54px; object-fit: cover; border-radius: 14px; border: 1px solid #e5e7eb;"
+                                    style="width: 54px; height: 54px; object-fit: contain; border-radius: 14px; border: 1px solid #e5e7eb; background:#fff; padding:4px;"
                                 >
                                 <small class="text-muted">Current logo</small>
                             </div>
@@ -94,11 +94,80 @@
                                 <img
                                     src="{{ asset('storage/' . $settings->favicon_path) }}"
                                     alt="Store favicon"
-                                    style="width: 40px; height: 40px; object-fit: cover; border-radius: 10px; border: 1px solid #e5e7eb;"
+                                    style="width: 40px; height: 40px; object-fit: contain; border-radius: 10px; border: 1px solid #e5e7eb; background:#fff; padding:3px;"
                                 >
                                 <small class="text-muted">Current favicon</small>
                             </div>
                         @endif
+                    </div>
+                </div>
+            </div>
+
+            <div class="premium-card p-4 mb-4">
+                <div class="d-flex align-items-center gap-3 mb-4">
+                    <div class="icon-pill">
+                        <i class="bi bi-palette"></i>
+                    </div>
+
+                    <div>
+                        <h3 class="mb-1">Theme Mode</h3>
+                        <p class="text-muted mb-0">Choose the global visual mode for the storefront and dashboard.</p>
+                    </div>
+                </div>
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="w-100">
+                            <input
+                                type="radio"
+                                name="theme_mode"
+                                value="light"
+                                class="d-none"
+                                {{ old('theme_mode', $settings->theme_mode ?? 'light') === 'light' ? 'checked' : '' }}
+                            >
+
+                            <div class="premium-card p-4 h-100 theme-option-card">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="icon-pill">
+                                        <i class="bi bi-sun"></i>
+                                    </div>
+
+                                    <div>
+                                        <h4 class="mb-1">Light Mode</h4>
+                                        <p class="text-muted mb-0">
+                                            Bright, clean, and premium default appearance.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </label>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="w-100">
+                            <input
+                                type="radio"
+                                name="theme_mode"
+                                value="dark"
+                                class="d-none"
+                                {{ old('theme_mode', $settings->theme_mode ?? 'light') === 'dark' ? 'checked' : '' }}
+                            >
+
+                            <div class="premium-card p-4 h-100 theme-option-card">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="icon-pill">
+                                        <i class="bi bi-moon-stars"></i>
+                                    </div>
+
+                                    <div>
+                                        <h4 class="mb-1">Dark Mode</h4>
+                                        <p class="text-muted mb-0">
+                                            Comfortable darker interface while keeping the same brand colors.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </label>
                     </div>
                 </div>
             </div>
@@ -272,12 +341,17 @@
             <div class="premium-card p-4">
                 <h3 class="mb-2">Settings Preview</h3>
                 <p class="text-muted mb-4">
-                    These values will be used later in invoices and store-facing layouts.
+                    These values are used across dashboard, storefront, and invoices.
                 </p>
 
                 <div class="side-item">
                     <span class="side-dot"></span>
                     Store: {{ $settings->store_name }}
+                </div>
+
+                <div class="side-item">
+                    <span class="side-dot"></span>
+                    Theme: {{ ucfirst($settings->theme_mode ?? 'light') }}
                 </div>
 
                 <div class="side-item">

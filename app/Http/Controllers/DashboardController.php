@@ -7,10 +7,12 @@ use App\Models\Costumers;
 use App\Models\Products;
 use App\Models\Products_Details;
 use App\Models\StoreSetting;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class DashboardController extends Controller
 {
@@ -391,6 +393,7 @@ class DashboardController extends Controller
             'whatsapp' => ['nullable', 'string', 'max:40'],
             'vat_rate' => ['required', 'numeric', 'min:0', 'max:100'],
             'invoice_note' => ['nullable', 'string', 'max:500'],
+            'theme_mode' => ['required', 'string', 'in:light,dark'],
             'logo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp,svg', 'max:2048'],
             'favicon' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp,ico', 'max:1024'],
         ]);
@@ -409,6 +412,7 @@ class DashboardController extends Controller
             'whatsapp' => $validated['whatsapp'] ?? null,
             'vat_rate' => $validated['vat_rate'],
             'invoice_note' => $validated['invoice_note'] ?? null,
+            'theme_mode' => $validated['theme_mode'],
         ];
 
         if ($request->hasFile('logo')) {
@@ -430,6 +434,80 @@ class DashboardController extends Controller
         $settings->update($settingsData);
 
         return redirect()->route('settings.index')->with('success', 'Store settings updated successfully.');
+    }
+
+    public function adminUsers()
+    {
+        $users = User::orderByDesc('id')->get();
+
+        return view('dashboard.admin_users', compact('users'));
+    }
+
+    public function storeAdminUser(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:80'],
+            'email' => ['required', 'email', 'max:120', 'unique:users,email'],
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
+        ]);
+
+        User::create([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'password' => $validated['password'],
+        ]);
+
+        return redirect()->route('admin-users.index')->with('success', 'Admin user created successfully.');
+    }
+
+    public function updateAdminUser(Request $request, $id)
+    {
+        $user = User::findOrFail($id);
+
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:80'],
+            'email' => [
+                'required',
+                'email',
+                'max:120',
+                Rule::unique('users', 'email')->ignore($user->id),
+            ],
+            'password' => ['nullable', 'string', 'min:8', 'confirmed'],
+        ]);
+
+        $userData = [
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+        ];
+
+        if (! empty($validated['password'])) {
+            $userData['password'] = $validated['password'];
+        }
+
+        $user->update($userData);
+
+        return redirect()->route('admin-users.index')->with('success', 'Admin user updated successfully.');
+    }
+
+    public function deleteAdminUser($id)
+    {
+        $user = User::findOrFail($id);
+
+        if (auth()->id() === $user->id) {
+            return redirect()->route('admin-users.index')->withErrors([
+                'user' => 'You cannot delete your own admin account while signed in.',
+            ]);
+        }
+
+        if (User::count() <= 1) {
+            return redirect()->route('admin-users.index')->withErrors([
+                'user' => 'You cannot delete the last admin user.',
+            ]);
+        }
+
+        $user->delete();
+
+        return redirect()->route('admin-users.index')->with('success', 'Admin user deleted successfully.');
     }
 
     private function uniqueCategorySlug(string $name, ?int $ignoreId = null): string

@@ -24,6 +24,9 @@
     $storeEmail = $storeSettings->email ?? null;
     $storePhone = $storeSettings->phone ?? null;
     $storeWhatsapp = $storeSettings->whatsapp ?? null;
+    $storeThemeMode = in_array(($storeSettings->theme_mode ?? 'light'), ['light', 'dark'], true)
+        ? $storeSettings->theme_mode
+        : 'light';
 @endphp
 
 <head>
@@ -67,7 +70,7 @@
     </style>
 </head>
 
-<body class="laravel-shell">
+<body class="laravel-shell theme-{{ $storeThemeMode }}">
     <nav class="navbar navbar-expand-lg premium-nav sticky-top">
         <div class="container">
             <a class="brand navbar-brand" href="{{ route('index') }}" aria-label="{{ $storeName }} home">

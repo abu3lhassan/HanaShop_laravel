@@ -1,29 +1,29 @@
-# Deployment Notes
+# Deployment notes
 
-## GitHub Pages
+> HanaShop is a **proof of concept**, not a production e-commerce platform. These notes describe how the static preview is published and what a hosted trial would require. They are not an invitation to run it for real customers.
 
-GitHub Pages should only be used for the static preview page: `index.html`.
-It will not run the Laravel application.
+## GitHub Pages (static preview only)
 
-## Laravel hosting checklist
+GitHub Pages serves the static preview page, `index.html`. It does not run the Laravel application.
+
+## Hosting the Laravel application for a private trial
 
 1. Upload the project to PHP hosting.
-2. Set the web root/document root to the `public` folder.
-3. Create a production `.env` file.
-4. Set database credentials.
-5. Run:
+2. Set the web root to the `public` folder.
+3. Create a production `.env` file and set the database credentials.
+4. Run:
 
 ```bash
 composer install --no-dev --optimize-autoloader
 php artisan key:generate
-php artisan migrate --seed
+php artisan migrate --force
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
 ```
 
-6. Make sure `storage` and `bootstrap/cache` are writable.
+5. Make sure `storage` and `bootstrap/cache` are writable.
 
-## GitHub Pages preview
+**Do not run `php artisan migrate --seed` on a hosted database.** The seeder creates a demo administrator with a placeholder password and fictional customers. It exists for local development only.
 
-The included `index.html` is a static landing page for the GitHub Pages URL. It is not the live Laravel system.
+Before exposing a hosted trial to anyone, also disable public registration and restrict the dashboard to a dedicated administrator role. Both are open limitations of this proof of concept.
